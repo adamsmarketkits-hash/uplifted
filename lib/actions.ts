@@ -3,6 +3,7 @@
 import { randomUUID } from "crypto";
 import { hash, compare } from "bcryptjs";
 import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "./db";
@@ -54,6 +55,36 @@ export async function createFamily(
     return { error: "PIN must be 4–8 digits." };
   }
 
+  try {
+    await createFamilyCore(familyName, displayName, pin);
+    return {};
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    console.error("createFamily failed:", error);
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("SESSION_SECRET")) {
+      return {
+        error:
+          "Site setup is incomplete (SESSION_SECRET). Add it in Vercel → Settings → Environment Variables, then redeploy.",
+      };
+    }
+    if (message.includes("DATABASE_URL")) {
+      return {
+        error:
+          "Database is not configured. Check DATABASE_URL in Vercel environment variables.",
+      };
+    }
+    return {
+      error: "Could not create family. Try again in a minute or check Vercel logs.",
+    };
+  }
+}
+
+async function createFamilyCore(
+  familyName: string,
+  displayName: string,
+  pin: string,
+) {
   const db = await getDb();
   const pinHash = await hash(pin, 10);
   let inviteCode = generateInviteCode();

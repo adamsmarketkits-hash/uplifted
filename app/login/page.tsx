@@ -1,3 +1,4 @@
+import { EagleBackdrop } from "@/components/eagle-backdrop";
 import { LoginForms } from "@/components/login-forms";
 import { getFamilyMembers } from "@/lib/queries";
 import { getFamilyCookie, getSession } from "@/lib/session";
@@ -15,12 +16,13 @@ export default async function LoginPage() {
 
   return (
     <main className="mx-auto flex min-h-full max-w-lg flex-col gap-6 px-4 py-10">
+      <EagleBackdrop />
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-lime-300/80">
+        <p className="text-xs uppercase tracking-[0.25em] text-gold-300/80">
           UpLifted
         </p>
         <h1 className="mt-2 text-3xl font-semibold">{family.familyName}</h1>
-        <p className="mt-1 font-mono text-sm tracking-[0.3em] text-lime-200">
+        <p className="mt-1 font-mono text-sm tracking-[0.3em] text-gold-200">
           {family.inviteCode}
         </p>
       </div>

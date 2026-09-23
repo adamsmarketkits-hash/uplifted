@@ -1,3 +1,4 @@
+import { EagleBackdrop } from "@/components/eagle-backdrop";
 import { WelcomeForms } from "@/components/welcome-forms";
 import { getFamilyCookie, getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
@@ -12,13 +13,14 @@ export default async function WelcomePage() {
 
   return (
     <main className="mx-auto flex min-h-full max-w-lg flex-col gap-6 px-4 py-10">
+      <EagleBackdrop />
       <div>
-        <p className="text-xs uppercase tracking-[0.25em] text-lime-300/80">
+        <p className="text-xs uppercase tracking-[0.25em] text-gold-300/80">
           UpLifted
         </p>
         <h1 className="mt-2 text-3xl font-semibold">Lift. Log. Compete.</h1>
-        <p className="mt-2 text-stone-400">
-          Track sets, reps, and weekly volume with up to five family members.
+        <p className="mt-2 text-silver-400">
+          Track sets, reps, and weekly volume with up to six family members.
           Hit 3 workouts a week.
         </p>
       </div>

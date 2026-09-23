@@ -33,18 +33,18 @@ export default async function MemberWeekPage({
         inviteCode={family?.inviteCode}
       />
       <main className="mx-auto flex max-w-lg flex-col gap-4 px-4 py-5">
-        <Link href="/family" className="text-sm text-lime-300">
+        <Link href="/family" className="text-sm text-gold-300">
           ← Family board
         </Link>
         <div>
           <h1 className="text-2xl font-semibold">{data.member.displayName}</h1>
-          <p className="text-stone-400">
+          <p className="text-silver-400">
             {data.workouts.length} workout{data.workouts.length === 1 ? "" : "s"} this
             week · {formatVolume(weekVolume)} lb volume
           </p>
         </div>
         {data.workouts.length === 0 && (
-          <p className="rounded-2xl border border-white/10 bg-[#1a2118] p-4 text-stone-400">
+          <p className="rounded-2xl border border-white/10 bg-navy-800/85 p-4 text-silver-400">
             No completed workouts yet this week.
           </p>
         )}
@@ -59,31 +59,31 @@ export default async function MemberWeekPage({
           return (
             <article
               key={workout.id}
-              className="rounded-2xl border border-white/10 bg-[#1a2118] p-4"
+              className="rounded-2xl border border-white/10 bg-navy-800/85 p-4"
             >
               <div className="mb-3 flex items-baseline justify-between">
                 <h2 className="font-semibold">
                   {`${ymd.year}-${String(ymd.month).padStart(2, "0")}-${String(ymd.day).padStart(2, "0")}`}
                 </h2>
-                <p className="text-sm tabular-nums text-stone-400">
+                <p className="text-sm tabular-nums text-silver-400">
                   {formatVolume(workout.volume)} lb
                 </p>
               </div>
               {[...grouped.entries()].map(([name, setRows]) => (
                 <div key={name} className="mb-3 last:mb-0">
-                  <p className="text-sm text-lime-200">{name}</p>
-                  <ul className="mt-1 text-sm text-stone-300">
+                  <p className="text-sm text-gold-200">{name}</p>
+                  <ul className="mt-1 text-sm text-silver-300">
                     {setRows.map((set) => (
                       <li key={set.id} className="flex justify-between tabular-nums">
                         <span>
                           {set.weight} × {set.reps}
                           {!set.completedAt && (
-                            <span className="ml-2 text-xs text-stone-500">
+                            <span className="ml-2 text-xs text-silver-500">
                               skipped
                             </span>
                           )}
                         </span>
-                        <span className="text-stone-500">
+                        <span className="text-silver-500">
                           {set.completedAt
                             ? formatVolume(set.weight * set.reps)
                             : "—"}

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { TimeZoneCookie } from "@/components/timezone-cookie";
 import "./globals.css";
@@ -18,13 +18,17 @@ export const metadata: Metadata = {
   description: "Family workout tracker — lift, log, encourage, and compete on weekly consistency.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#070d1a",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-[#10140f] font-sans text-[#f2f5ef]">
+      <body className="min-h-full bg-navy-950 font-sans text-silver-200">
         <TimeZoneCookie />
         {children}
       </body>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
+import { EagleBackdrop } from "@/components/eagle-backdrop";
 import { FitnessIcon, fitnessLabel } from "@/components/fitness-icon";
 import { getFamily, getFamilyWeekBoard } from "@/lib/queries";
 import { getSession, getTimeZone } from "@/lib/session";
@@ -17,6 +18,7 @@ export default async function FamilyPage() {
 
   return (
     <div className="min-h-full">
+      <EagleBackdrop />
       <AppHeader
         name={session.displayName}
         inviteCode={family?.inviteCode}
@@ -24,12 +26,12 @@ export default async function FamilyPage() {
       <main className="mx-auto flex max-w-lg flex-col gap-4 px-4 py-5">
         <div>
           <h1 className="text-2xl font-semibold">{family?.name}</h1>
-          <p className="text-sm text-stone-400">
+          <p className="text-sm text-silver-400">
             Weekly volume and 3-workout consistency. Tap a name for this week’s
             sessions.
           </p>
           {family && (
-            <p className="mt-2 rounded-xl border border-lime-400/20 bg-[#1a2118] px-3 py-2 font-mono text-sm tracking-[0.2em] text-lime-200">
+            <p className="mt-2 rounded-xl border border-gold-400/20 bg-navy-800/85 px-3 py-2 font-mono text-sm tracking-[0.2em] text-gold-200">
               Invite {family.inviteCode}
             </p>
           )}
@@ -41,19 +43,19 @@ export default async function FamilyPage() {
                 href={`/family/${row.id}`}
                 className={`flex items-center gap-3 rounded-2xl border px-3 py-3 ${
                   row.id === session.memberId
-                    ? "border-lime-400/40 bg-lime-400/10"
-                    : "border-white/10 bg-[#1a2118]"
+                    ? "border-gold-400/40 bg-gold-400/10"
+                    : "border-white/10 bg-navy-800/85"
                 }`}
               >
-                <span className="w-6 text-center text-sm text-stone-500">
+                <span className="w-6 text-center text-sm text-silver-500">
                   {index + 1}
                 </span>
-                <div className="text-lime-300">
+                <div className="text-gold-300">
                   <FitnessIcon shape={row.shape} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{row.displayName}</p>
-                  <p className="text-xs text-stone-400">
+                  <p className="text-xs text-silver-400">
                     {fitnessLabel(row.shape)} · {row.workoutCount}/{row.goal}{" "}
                     workouts
                   </p>
@@ -62,7 +64,7 @@ export default async function FamilyPage() {
                   <p className="tabular-nums font-semibold">
                     {formatVolume(row.volume)}
                   </p>
-                  <p className="text-[11px] text-stone-500">lb vol</p>
+                  <p className="text-[11px] text-silver-500">lb vol</p>
                 </div>
               </Link>
             </li>

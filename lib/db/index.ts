@@ -58,16 +58,32 @@ async function createDb(): Promise<Db> {
     return drizzlePglite(client, { schema }) as unknown as Db;
   }
 
+  const isNeon = url.includes("neon.tech");
   const needsSsl =
     url.includes("sslmode=require") ||
-    url.includes("neon.tech") ||
+    isNeon ||
     url.includes("supabase.co");
+  const usePooler =
+    isNeon ||
+    url.includes("pgbouncer=true") ||
+    url.includes("-pooler.");
 
   const sql = postgres(url, {
-    max: 10,
+    // Serverless: one connection per instance; Neon pooler needs prepare: false.
+    max: 1,
+    idle_timeout: 20,
+    connect_timeout: 10,
     ssl: needsSsl ? "require" : false,
+    prepare: !usePooler,
   });
-  await sql.unsafe(SCHEMA_SQL);
+
+  const statements = SCHEMA_SQL.split(";")
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0);
+  for (const statement of statements) {
+    await sql.unsafe(statement);
+  }
+
   return drizzlePg(sql, { schema });
 }
 

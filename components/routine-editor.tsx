@@ -103,12 +103,12 @@ export function RoutineEditor({
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="text-sm text-stone-300">
+      <label className="text-sm text-silver-300">
         Who it’s for
         <select
           value={who}
           onChange={(event) => setWho(event.target.value)}
-          className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
+          className="mt-1 w-full rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-white"
         >
           {members.map((member) => (
             <option key={member.id} value={member.id}>
@@ -117,24 +117,24 @@ export function RoutineEditor({
           ))}
         </select>
       </label>
-      <label className="text-sm text-stone-300">
+      <label className="text-sm text-silver-300">
         Workout name
         <input
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           maxLength={40}
           placeholder="Upper A"
-          className="mt-1 w-full rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
+          className="mt-1 w-full rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-white"
         />
       </label>
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-silver-500">
         Leave lb or reps blank and Today fills them from the last time that person did the lift.
       </p>
 
       {draft.map((exercise, exerciseIndex) => (
         <article
           key={exerciseIndex}
-          className="rounded-2xl border border-white/10 bg-[#1a2118] p-3"
+          className="rounded-2xl border border-white/10 bg-navy-800/85 p-3"
         >
           <div className="mb-2 flex items-center gap-2">
             <input
@@ -142,13 +142,13 @@ export function RoutineEditor({
               value={exercise.name}
               onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
               placeholder="Exercise"
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             />
             <button
               type="button"
               onClick={() => move(exerciseIndex, -1)}
               disabled={exerciseIndex === 0}
-              className="px-2 text-sm text-stone-400 disabled:opacity-30"
+              className="px-2 text-sm text-silver-400 disabled:opacity-30"
             >
               Up
             </button>
@@ -156,12 +156,12 @@ export function RoutineEditor({
               type="button"
               onClick={() => move(exerciseIndex, 1)}
               disabled={exerciseIndex === draft.length - 1}
-              className="px-2 text-sm text-stone-400 disabled:opacity-30"
+              className="px-2 text-sm text-silver-400 disabled:opacity-30"
             >
               Down
             </button>
           </div>
-          <div className="grid grid-cols-[1.5rem_1fr_1fr_2rem] gap-2 px-1 pb-1 text-[11px] uppercase tracking-wide text-stone-500">
+          <div className="grid grid-cols-[1.5rem_1fr_1fr_2rem] gap-2 px-1 pb-1 text-[11px] uppercase tracking-wide text-silver-500">
             <span>#</span>
             <span>lbs</span>
             <span>reps</span>
@@ -172,20 +172,20 @@ export function RoutineEditor({
               key={setIndex}
               className="mb-1 grid grid-cols-[1.5rem_1fr_1fr_2rem] items-center gap-2"
             >
-              <span className="text-sm tabular-nums text-stone-400">{setIndex + 1}</span>
+              <span className="text-sm tabular-nums text-silver-400">{setIndex + 1}</span>
               <input
                 inputMode="decimal"
                 value={set.weight}
                 onChange={(event) => updateSet(exerciseIndex, setIndex, { weight: event.target.value })}
                 placeholder="last"
-                className="w-full rounded-md border border-white/10 bg-black/30 px-2 py-1.5 text-sm tabular-nums"
+                className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
               />
               <input
                 inputMode="numeric"
                 value={set.reps}
                 onChange={(event) => updateSet(exerciseIndex, setIndex, { reps: event.target.value })}
                 placeholder="last"
-                className="w-full rounded-md border border-white/10 bg-black/30 px-2 py-1.5 text-sm tabular-nums"
+                className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
               />
               <button
                 type="button"
@@ -197,7 +197,7 @@ export function RoutineEditor({
                         : exercise.sets.filter((_, i) => i !== setIndex),
                   })
                 }
-                className="text-stone-500"
+                className="text-silver-500"
                 aria-label="Remove set"
               >
                 ×
@@ -210,7 +210,7 @@ export function RoutineEditor({
               onClick={() =>
                 updateExercise(exerciseIndex, { sets: [...exercise.sets, blankSet()] })
               }
-              className="text-sm text-lime-300"
+              className="text-sm text-gold-300"
             >
               + Set
             </button>
@@ -223,7 +223,7 @@ export function RoutineEditor({
                     : current.filter((_, i) => i !== exerciseIndex),
                 )
               }
-              className="text-sm text-stone-500"
+              className="text-sm text-silver-500"
             >
               Remove
             </button>
@@ -239,7 +239,7 @@ export function RoutineEditor({
       <button
         type="button"
         onClick={() => setDraft((current) => [...current, { name: "", sets: [blankSet()] }])}
-        className="rounded-xl border border-white/15 px-4 py-3 text-sm text-stone-200"
+        className="rounded-xl border border-white/15 px-4 py-3 text-sm text-silver-200"
       >
         Add exercise
       </button>
@@ -250,7 +250,7 @@ export function RoutineEditor({
         type="button"
         disabled={pending}
         onClick={save}
-        className="rounded-2xl bg-lime-400 px-4 py-3 font-semibold text-black disabled:opacity-60"
+        className="rounded-2xl bg-gold-400 px-4 py-3 font-semibold text-navy-950 disabled:opacity-60"
       >
         {pending ? "Saving…" : "Save workout"}
       </button>
@@ -271,7 +271,7 @@ export function RoutineEditor({
               router.refresh();
             });
           }}
-          className="rounded-xl border border-lime-400/30 px-4 py-3 text-sm font-semibold text-lime-200 disabled:opacity-60"
+          className="rounded-xl border border-gold-400/30 px-4 py-3 text-sm font-semibold text-gold-200 disabled:opacity-60"
         >
           Start this workout
         </button>
@@ -298,7 +298,7 @@ export function RoutineEditor({
               router.refresh();
             });
           }}
-          className="text-sm text-stone-500"
+          className="text-sm text-silver-500"
         >
           {confirmDelete ? "Tap again to delete" : "Delete workout"}
         </button>

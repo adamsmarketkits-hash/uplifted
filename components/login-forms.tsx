@@ -30,16 +30,16 @@ export function LoginForms({
 
   return (
     <div className="flex flex-col gap-8">
-      <form action={loginAction} className="flex flex-col gap-3 rounded-2xl border border-lime-400/20 bg-[#1a2118] p-4">
-        <h2 className="text-lg font-semibold text-lime-200">
+      <form action={loginAction} className="flex flex-col gap-3 rounded-2xl border border-gold-400/20 bg-navy-800/85 p-4">
+        <h2 className="text-lg font-semibold text-gold-200">
           Who’s lifting in {familyName}?
         </h2>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           Member
           <select
             name="memberId"
             required
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             defaultValue={members[0]?.id}
           >
             {members.map((member) => (
@@ -49,7 +49,7 @@ export function LoginForms({
             ))}
           </select>
         </label>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           PIN
           <input
             name="pin"
@@ -59,7 +59,7 @@ export function LoginForms({
             required
             minLength={4}
             maxLength={8}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
           />
         </label>
         {loginState.error && (
@@ -68,26 +68,26 @@ export function LoginForms({
         <button
           type="submit"
           disabled={loginPending || members.length === 0}
-          className="rounded-xl bg-lime-400 px-4 py-2.5 font-semibold text-black disabled:opacity-60"
+          className="rounded-xl bg-gold-400 px-4 py-2.5 font-semibold text-navy-950 disabled:opacity-60"
         >
           {loginPending ? "Checking…" : "Log in"}
         </button>
       </form>
 
       {members.length < 6 && (
-        <form action={joinAction} className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#1a2118] p-4">
+        <form action={joinAction} className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-navy-800/85 p-4">
           <h2 className="text-lg font-semibold">New family member</h2>
           <input type="hidden" name="inviteCode" value={inviteCode} />
-          <label className="text-sm text-stone-300">
+          <label className="text-sm text-silver-300">
             Your name
             <input
               name="displayName"
               required
               maxLength={24}
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+              className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             />
           </label>
-          <label className="text-sm text-stone-300">
+          <label className="text-sm text-silver-300">
             Choose a PIN (4–8 digits)
             <input
               name="pin"
@@ -96,7 +96,7 @@ export function LoginForms({
               required
               minLength={4}
               maxLength={8}
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+              className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             />
           </label>
           {joinState.error && (
@@ -105,7 +105,7 @@ export function LoginForms({
           <button
             type="submit"
             disabled={joinPending}
-            className="rounded-xl border border-lime-400/40 px-4 py-2.5 font-semibold text-lime-200 disabled:opacity-60"
+            className="rounded-xl border border-gold-400/40 px-4 py-2.5 font-semibold text-gold-200 disabled:opacity-60"
           >
             {joinPending ? "Adding…" : "Add me"}
           </button>
@@ -113,7 +113,7 @@ export function LoginForms({
       )}
 
       <form action={leaveDevice}>
-        <button type="submit" className="w-full text-center text-sm text-stone-500">
+        <button type="submit" className="w-full text-center text-sm text-silver-500">
           Different family
         </button>
       </form>

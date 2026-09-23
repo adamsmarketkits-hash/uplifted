@@ -46,23 +46,23 @@ export default async function TodayPage() {
       />
       <main className="mx-auto flex max-w-lg flex-col gap-5 px-4 py-5">
         <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-white/10 bg-[#1a2118] p-4">
-            <p className="text-xs uppercase tracking-widest text-stone-400">
+          <div className="rounded-2xl border border-white/10 bg-navy-800/85 p-4">
+            <p className="text-xs uppercase tracking-widest text-silver-400">
               Today
             </p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
               {formatVolume(todayVolume)}
             </p>
-            <p className="text-xs text-stone-500">lb volume</p>
+            <p className="text-xs text-silver-500">lb volume</p>
           </div>
-          <div className="rounded-2xl border border-lime-400/25 bg-[#1a2118] p-4">
-            <p className="text-xs uppercase tracking-widest text-lime-300/80">
+          <div className="rounded-2xl border border-gold-400/25 bg-navy-800/85 p-4">
+            <p className="text-xs uppercase tracking-widest text-gold-300/80">
               This week
             </p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">
               {formatVolume(weekVolume)}
             </p>
-            <p className="text-xs text-stone-500">lb volume</p>
+            <p className="text-xs text-silver-500">lb volume</p>
           </div>
         </div>
         <WorkoutLogger

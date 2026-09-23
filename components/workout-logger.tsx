@@ -113,7 +113,7 @@ export function WorkoutLogger({
         <div className="flex flex-col gap-3">
           {routines.length > 0 && (
             <div className="flex flex-col gap-2">
-              <p className="text-xs uppercase tracking-widest text-stone-400">
+              <p className="text-xs uppercase tracking-widest text-silver-400">
                 Your workouts
               </p>
               {routines.map((routine) => (
@@ -122,10 +122,10 @@ export function WorkoutLogger({
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => startRoutine(routine.id))}
-                  className="rounded-2xl border border-lime-400/25 bg-[#1a2118] px-4 py-3 text-left disabled:opacity-60"
+                  className="rounded-2xl border border-gold-400/25 bg-navy-800/85 px-4 py-3 text-left disabled:opacity-60"
                 >
                   <p className="font-semibold">{routine.name}</p>
-                  <p className="text-sm text-stone-400">
+                  <p className="text-sm text-silver-400">
                     {routine.exerciseNames.join(" · ")}
                   </p>
                 </button>
@@ -138,8 +138,8 @@ export function WorkoutLogger({
             onClick={() => run(() => startWorkout())}
             className={
               routines.length
-                ? "rounded-2xl border border-white/15 px-4 py-3 text-sm text-stone-200 disabled:opacity-60"
-                : "rounded-2xl bg-lime-400 px-4 py-4 text-lg font-semibold text-black disabled:opacity-60"
+                ? "rounded-2xl border border-white/15 px-4 py-3 text-sm text-silver-200 disabled:opacity-60"
+                : "rounded-2xl bg-gold-400 px-4 py-4 text-lg font-semibold text-navy-950 disabled:opacity-60"
             }
           >
             {routines.length ? "Start an empty workout" : "Start workout"}
@@ -149,28 +149,28 @@ export function WorkoutLogger({
 
       {workout && (
         <>
-          <div className="flex items-center justify-between rounded-xl border border-lime-400/20 bg-[#1a2118] px-4 py-3">
+          <div className="flex items-center justify-between rounded-xl border border-gold-400/20 bg-navy-800/85 px-4 py-3">
             <div>
-              <p className="text-xs uppercase tracking-widest text-lime-300/80">
+              <p className="text-xs uppercase tracking-widest text-gold-300/80">
                 {routineName ?? "This session"}
               </p>
               <p className="text-2xl font-semibold tabular-nums">
                 {formatVolume(liveVolume)}{" "}
-                <span className="text-sm font-normal text-stone-400">lb vol</span>
+                <span className="text-sm font-normal text-silver-400">lb vol</span>
               </p>
               {previous ? (
-                <p className="text-xs text-stone-400">
+                <p className="text-xs text-silver-400">
                   Last time {previous.dateLabel} · {previous.volumeLabel} lb
                 </p>
               ) : routineName ? (
-                <p className="text-xs text-stone-500">First time through this workout</p>
+                <p className="text-xs text-silver-500">First time through this workout</p>
               ) : null}
             </div>
             <button
               type="button"
               disabled={pending}
               onClick={() => run(() => finishWorkout(workout.id))}
-              className="rounded-xl border border-white/15 px-3 py-2 text-sm text-stone-200"
+              className="rounded-xl border border-white/15 px-3 py-2 text-sm text-silver-200"
             >
               Finish
             </button>
@@ -190,12 +190,12 @@ export function WorkoutLogger({
               onChange={(event) => setSaveName(event.target.value)}
               placeholder="Name this workout"
               maxLength={40}
-              className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
+              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-white"
             />
             <button
               type="submit"
               disabled={pending || !saveName.trim()}
-              className="rounded-xl border border-lime-400/30 px-3 text-sm font-semibold text-lime-200 disabled:opacity-60"
+              className="rounded-xl border border-gold-400/30 px-3 text-sm font-semibold text-gold-200 disabled:opacity-60"
             >
               {workout.routineId ? "Update" : "Save"}
             </button>
@@ -219,7 +219,7 @@ export function WorkoutLogger({
               value={exerciseName}
               onChange={(e) => setExerciseName(e.target.value)}
               placeholder="Add exercise"
-              className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-2.5 text-white"
+              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-white"
             />
             <datalist id="exercise-suggestions">
               {suggestions.map((name) => (
@@ -229,7 +229,7 @@ export function WorkoutLogger({
             <button
               type="submit"
               disabled={pending}
-              className="rounded-xl bg-lime-400 px-4 font-semibold text-black"
+              className="rounded-xl bg-gold-400 px-4 font-semibold text-navy-950"
             >
               Add
             </button>
@@ -241,21 +241,21 @@ export function WorkoutLogger({
             return (
             <article
               key={group.name}
-              className="rounded-2xl border border-white/10 bg-[#1a2118] p-3"
+              className="rounded-2xl border border-white/10 bg-navy-800/85 p-3"
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div>
                   <h3 className="font-semibold">{group.name}</h3>
                   {remembered?.lastLabel && (
-                    <p className="text-xs text-stone-400">Last {remembered.lastLabel}</p>
+                    <p className="text-xs text-silver-400">Last {remembered.lastLabel}</p>
                   )}
                   {isNewRecord ? (
-                    <p className="text-xs text-lime-300">
+                    <p className="text-xs text-gold-300">
                       New record
                       {remembered?.recordLabel ? ` · was ${remembered.recordLabel}` : ""}
                     </p>
                   ) : remembered?.recordLabel ? (
-                    <p className="text-xs text-lime-300/80">
+                    <p className="text-xs text-gold-300/80">
                       Record {remembered.recordLabel}
                     </p>
                   ) : null}
@@ -264,12 +264,12 @@ export function WorkoutLogger({
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => addSet(workout.id, group.name))}
-                  className="text-sm text-lime-300"
+                  className="text-sm text-gold-300"
                 >
                   + Set
                 </button>
               </div>
-              <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem_2rem] gap-2 px-1 pb-1 text-[11px] uppercase tracking-wide text-stone-500">
+              <div className="grid grid-cols-[2rem_1fr_1fr_2.5rem_2rem] gap-2 px-1 pb-1 text-[11px] uppercase tracking-wide text-silver-500">
                 <span>#</span>
                 <span>lbs</span>
                 <span>reps</span>
@@ -328,17 +328,17 @@ function SetRowEditor({
   return (
     <div
       className={`mb-1 grid grid-cols-[2rem_1fr_1fr_2.5rem_2rem] items-center gap-2 rounded-lg px-1 py-1 ${
-        done ? "bg-lime-400/10" : ""
+        done ? "bg-gold-400/10" : ""
       }`}
     >
-      <span className="text-sm tabular-nums text-stone-400">{row.setIndex}</span>
+      <span className="text-sm tabular-nums text-silver-400">{row.setIndex}</span>
       <input
         inputMode="decimal"
         value={weight}
         disabled={disabled}
         onChange={(e) => setWeight(e.target.value)}
         onBlur={commit}
-        className="w-full rounded-md border border-white/10 bg-black/30 px-2 py-1.5 text-sm tabular-nums"
+        className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
       />
       <input
         inputMode="numeric"
@@ -346,7 +346,7 @@ function SetRowEditor({
         disabled={disabled}
         onChange={(e) => setReps(e.target.value)}
         onBlur={commit}
-        className="w-full rounded-md border border-white/10 bg-black/30 px-2 py-1.5 text-sm tabular-nums"
+        className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
       />
       <button
         type="button"
@@ -355,7 +355,7 @@ function SetRowEditor({
           onToggle(!done, Number(weight), Number(reps));
         }}
         className={`h-8 rounded-md text-sm font-bold ${
-          done ? "bg-lime-400 text-black" : "border border-white/20 text-stone-300"
+          done ? "bg-gold-400 text-navy-950" : "border border-white/20 text-silver-300"
         }`}
         aria-pressed={done}
         aria-label={done ? "Mark set incomplete" : "Complete set"}
@@ -366,7 +366,7 @@ function SetRowEditor({
         type="button"
         disabled={disabled}
         onClick={onDelete}
-        className="text-stone-500 hover:text-red-300"
+        className="text-silver-500 hover:text-red-300"
         aria-label="Delete set"
       >
         ×

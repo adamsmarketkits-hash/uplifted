@@ -21,29 +21,29 @@ export function WelcomeForms() {
 
   return (
     <div className="flex flex-col gap-8">
-      <form action={createAction} className="flex flex-col gap-3 rounded-2xl border border-lime-400/20 bg-[#1a2118] p-4">
-        <h2 className="text-lg font-semibold text-lime-200">Create a family</h2>
-        <label className="text-sm text-stone-300">
+      <form action={createAction} className="flex flex-col gap-3 rounded-2xl border border-gold-400/20 bg-navy-800/85 p-4">
+        <h2 className="text-lg font-semibold text-gold-200">Create a family</h2>
+        <label className="text-sm text-silver-300">
           Family name
           <input
             name="familyName"
             required
             maxLength={40}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             placeholder="The Strongs"
           />
         </label>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           Your name
           <input
             name="displayName"
             required
             maxLength={24}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
             placeholder="Adam"
           />
         </label>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           PIN (4–8 digits)
           <input
             name="pin"
@@ -53,7 +53,7 @@ export function WelcomeForms() {
             required
             minLength={4}
             maxLength={8}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
           />
         </label>
         {createState.error && (
@@ -62,33 +62,33 @@ export function WelcomeForms() {
         <button
           type="submit"
           disabled={createPending}
-          className="rounded-xl bg-lime-400 px-4 py-2.5 font-semibold text-black disabled:opacity-60"
+          className="rounded-xl bg-gold-400 px-4 py-2.5 font-semibold text-navy-950 disabled:opacity-60"
         >
           {createPending ? "Creating…" : "Create family"}
         </button>
       </form>
 
-      <form action={joinAction} className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-[#1a2118] p-4">
+      <form action={joinAction} className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-navy-800/85 p-4">
         <h2 className="text-lg font-semibold">Join a family</h2>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           Invite code
           <input
             name="inviteCode"
             required
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 uppercase tracking-widest text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 uppercase tracking-widest text-white"
             placeholder="ABCD2345"
           />
         </label>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           Your name
           <input
             name="displayName"
             required
             maxLength={24}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
           />
         </label>
-        <label className="text-sm text-stone-300">
+        <label className="text-sm text-silver-300">
           PIN (4–8 digits)
           <input
             name="pin"
@@ -98,7 +98,7 @@ export function WelcomeForms() {
             required
             minLength={4}
             maxLength={8}
-            className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-white"
+            className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
           />
         </label>
         {joinState.error && (
@@ -107,7 +107,7 @@ export function WelcomeForms() {
         <button
           type="submit"
           disabled={joinPending}
-          className="rounded-xl border border-lime-400/40 px-4 py-2.5 font-semibold text-lime-200 disabled:opacity-60"
+          className="rounded-xl border border-gold-400/40 px-4 py-2.5 font-semibold text-gold-200 disabled:opacity-60"
         >
           {joinPending ? "Joining…" : "Join family"}
         </button>

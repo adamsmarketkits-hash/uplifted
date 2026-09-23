@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #10140f;
-  --foreground: #f2f5ef;
+  --background: #070d1a;
+  --foreground: #eef2f7;
 }
 
 @theme inline {
@@ -10,6 +10,23 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  --color-navy-950: #070d1a;
+  --color-navy-900: #0c1628;
+  --color-navy-800: #13213b;
+  --color-navy-700: #1c2d4d;
+
+  --color-gold-200: #f3e2a9;
+  --color-gold-300: #e6c65c;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #b8922a;
+
+  --color-silver-200: #e3e8ef;
+  --color-silver-300: #c5cdd8;
+  --color-silver-400: #98a3b3;
+  --color-silver-500: #6d7889;
 }
 
 body {
@@ -21,4 +38,11 @@ input,
 select,
 button {
   font: inherit;
+}
+
+.eagle-watermark {
+  background: url("/eagle-watermark.webp?v=2") center / contain no-repeat;
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(closest-side, #000 55%, transparent 100%);
 }
