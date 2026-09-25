@@ -2,7 +2,6 @@ import { AppHeader } from "@/components/app-header";
 import { RoutineEditor } from "@/components/routine-editor";
 import {
   getExerciseNames,
-  getFamily,
   getFamilyMembers,
   getRoutineDetail,
 } from "@/lib/queries";
@@ -19,8 +18,7 @@ export default async function EditWorkoutPage({
   const session = await getSession();
   if (!session) redirect("/");
   const { routineId } = await params;
-  const [family, members, suggestions, routine] = await Promise.all([
-    getFamily(session.familyId),
+  const [members, suggestions, routine] = await Promise.all([
     getFamilyMembers(session.familyId),
     getExerciseNames(session.familyId),
     getRoutineDetail(session.familyId, routineId),
@@ -29,7 +27,7 @@ export default async function EditWorkoutPage({
 
   return (
     <div className="min-h-full">
-      <AppHeader name={session.displayName} inviteCode={family?.inviteCode} />
+      <AppHeader name={session.displayName} />
       <main className="mx-auto flex max-w-lg flex-col gap-4 px-4 py-5">
         <h1 className="text-2xl font-semibold">{routine.name}</h1>
         <RoutineEditor

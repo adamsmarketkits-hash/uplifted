@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
-import { EagleBackdrop } from "@/components/eagle-backdrop";
-import { getFamily, getFamilyMembers, getFamilyRoutines } from "@/lib/queries";
+import { getFamilyMembers, getFamilyRoutines } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
@@ -10,21 +9,19 @@ export const dynamic = "force-dynamic";
 export default async function WorkoutsPage() {
   const session = await getSession();
   if (!session) redirect("/");
-  const [family, members, routines] = await Promise.all([
-    getFamily(session.familyId),
+  const [members, routines] = await Promise.all([
     getFamilyMembers(session.familyId),
     getFamilyRoutines(session.familyId),
   ]);
 
   return (
     <div className="min-h-full">
-      <EagleBackdrop />
-      <AppHeader name={session.displayName} inviteCode={family?.inviteCode} />
+      <AppHeader name={session.displayName} />
       <main className="mx-auto flex max-w-lg flex-col gap-5 px-4 py-5">
         <div>
           <h1 className="text-2xl font-semibold">Workouts</h1>
           <p className="text-sm text-silver-400">
-            Build a plan for each person. They start it from Today and see their last session and record.
+            Each person can save up to 6 workouts. Only the ones that have been added show up here.
           </p>
         </div>
         <Link
@@ -37,9 +34,12 @@ export default async function WorkoutsPage() {
           const theirs = routines.filter((routine) => routine.memberId === member.id);
           return (
             <section key={member.id} className="flex flex-col gap-2">
-              <h2 className="text-sm uppercase tracking-widest text-gold-300/80">
-                {member.displayName}
-              </h2>
+              <div className="flex items-baseline justify-between gap-3">
+                <h2 className="text-sm uppercase tracking-widest text-gold-300/80">
+                  {member.displayName}
+                </h2>
+                <p className="text-xs text-silver-500">{theirs.length} of 6</p>
+              </div>
               {theirs.length === 0 && (
                 <p className="rounded-2xl border border-white/10 bg-navy-800/85 px-4 py-3 text-sm text-silver-500">
                   No saved workout yet.

@@ -85,7 +85,7 @@ function ElapsedTimer({ startedAt }: { startedAt: Date }) {
   return <>{`${pad(h)}:${pad(m)}:${pad(s)}`}</>;
 }
 
-const SET_GRID = "grid grid-cols-[2rem_minmax(0,1fr)_4.25rem_3.5rem_2.5rem] items-center gap-2";
+const SET_GRID = "grid grid-cols-[minmax(0,1.4fr)_4.25rem_3.5rem_2.5rem] items-center gap-2";
 
 export function WorkoutLogger({
   workout,
@@ -333,9 +333,8 @@ export function WorkoutLogger({
             )}
 
             <div className={`${SET_GRID} mt-2 px-1 pb-1 text-xs font-semibold text-silver-400`}>
-              <span className="text-center">Set</span>
-              <span className="text-center">Previous</span>
-              <span className="text-center">lbs</span>
+              <span>Previous</span>
+              <span className="text-center">Lbs</span>
               <span className="text-center">Reps</span>
               <span className="text-center">✓</span>
             </div>
@@ -490,10 +489,7 @@ function SetRowEditor({
 
   return (
     <div className={`${SET_GRID} mb-1 rounded-lg px-1 py-1 ${done ? "bg-gold-400/15" : ""}`}>
-      <span className="text-center text-sm font-bold tabular-nums text-silver-200">
-        {row.setIndex}
-      </span>
-      <span className="truncate text-center text-sm tabular-nums text-silver-500">
+      <span className="truncate text-sm tabular-nums text-silver-400">
         {previous ? `${formatWeight(previous.weight)} × ${previous.reps}` : "—"}
       </span>
       <input

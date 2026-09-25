@@ -1,12 +1,11 @@
 import { AppHeader } from "@/components/app-header";
+import { StartWorkout } from "@/components/start-workout";
 import { WorkoutLogger } from "@/components/workout-logger";
 import {
   getActiveWorkout,
   getExerciseNames,
-  getFamily,
   getMemberRoutines,
-  getTodayVolume,
-  getWeekVolume,
+  getRecentFinishedWorkouts,
   getWorkoutMemory,
 } from "@/lib/queries";
 import { getSession, getTimeZone } from "@/lib/session";
@@ -19,14 +18,12 @@ export default async function TodayPage() {
   const session = await getSession();
   if (!session) redirect("/");
   const timeZone = await getTimeZone();
-  const family = await getFamily(session.familyId);
   const active = await getActiveWorkout(session.memberId);
   const exerciseNames = [...new Set((active?.sets ?? []).map((set) => set.exerciseName))];
-  const [todayVolume, weekVolume, suggestions, routines, memory] = await Promise.all([
-    getTodayVolume(session.memberId, timeZone),
-    getWeekVolume(session.memberId, timeZone),
-    getExerciseNames(session.familyId),
+  const [routines, recent, suggestions, memory] = await Promise.all([
     active ? Promise.resolve([]) : getMemberRoutines(session.memberId),
+    active ? Promise.resolve([]) : getRecentFinishedWorkouts(session.memberId, timeZone, 1),
+    getExerciseNames(session.familyId),
     active
       ? getWorkoutMemory(
           session.memberId,
@@ -38,51 +35,62 @@ export default async function TodayPage() {
       : Promise.resolve({ previous: null, byExercise: {} }),
   ]);
 
-  const weekday = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "long" }).format(
-    active?.workout.startedAt ?? new Date(),
-  );
+  const now = new Date();
+  const day = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "long" }).format(now);
+  const date = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  }).format(now);
+  const last = recent[0] ?? null;
 
   return (
     <div className="min-h-full">
-      <AppHeader
-        name={session.displayName}
-        inviteCode={family?.inviteCode}
-      />
+      <AppHeader name={session.displayName} />
       <main className="mx-auto flex max-w-lg flex-col gap-5 px-4 py-5">
-        {!active && (
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-white/10 bg-navy-800/85 p-4">
-            <p className="text-xs uppercase tracking-widest text-silver-400">
-              Today
-            </p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatVolume(todayVolume)}
-            </p>
-            <p className="text-xs text-silver-500">lb volume</p>
-          </div>
-          <div className="rounded-2xl border border-gold-400/25 bg-navy-800/85 p-4">
-            <p className="text-xs uppercase tracking-widest text-gold-300/80">
-              This week
-            </p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatVolume(weekVolume)}
-            </p>
-            <p className="text-xs text-silver-500">lb volume</p>
-          </div>
+        <div>
+          <p className="text-xs uppercase tracking-[0.2em] text-gold-300/80">Today</p>
+          <h1 className="mt-1 text-3xl font-semibold">{day}</h1>
+          <p className="text-silver-400">{date}</p>
         </div>
+
+        {!active && (
+          <>
+            <section className="rounded-2xl border border-white/10 bg-navy-800/85 px-4 py-3">
+              <p className="text-xs uppercase tracking-widest text-silver-400">Last workout</p>
+              {last ? (
+                <>
+                  <p className="mt-1 font-semibold">{last.name ?? "Workout"}</p>
+                  <p className="text-sm text-silver-400">
+                    {last.dateLabel} · {formatVolume(last.volume)} lb
+                  </p>
+                  {last.exerciseNames.length > 0 && (
+                    <p className="text-sm text-silver-500">{last.exerciseNames.join(" · ")}</p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-1 text-sm text-silver-500">No finished workout yet.</p>
+              )}
+            </section>
+            <StartWorkout routines={routines} />
+          </>
         )}
-        <WorkoutLogger
-          key={active?.workout.id ?? "idle"}
-          workout={active?.workout ?? null}
-          sets={active?.sets ?? []}
-          suggestions={suggestions}
-          routines={routines}
-          planOrder={active?.planOrder ?? []}
-          routineName={active?.routineName ?? null}
-          sessionTitle={`${weekday}’s session`}
-          previous={memory.previous}
-          memory={memory.byExercise}
-        />
+
+        {active && (
+          <WorkoutLogger
+            key={active.workout.id}
+            workout={active.workout}
+            sets={active.sets}
+            suggestions={suggestions}
+            routines={[]}
+            planOrder={active.planOrder}
+            routineName={active.routineName}
+            sessionTitle={`${day}’s session`}
+            previous={memory.previous}
+            memory={memory.byExercise}
+          />
+        )}
       </main>
     </div>
   );

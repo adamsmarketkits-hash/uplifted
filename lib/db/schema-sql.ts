@@ -1,4 +1,6 @@
 export const SCHEMA_SQL = `
+-- Additive only. Deploys must never DROP, TRUNCATE, or recreate these tables.
+-- Saved members, workouts, and plans live in Neon and have to survive every push.
 CREATE TABLE IF NOT EXISTS families (
   id text PRIMARY KEY,
   name text NOT NULL,

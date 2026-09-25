@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { switchMember } from "@/lib/actions";
 
-export function AppHeader({
-  name,
-  inviteCode,
-}: {
-  name: string;
-  inviteCode?: string;
-}) {
+export function AppHeader({ name }: { name: string }) {
   return (
     <header className="sticky top-0 z-10 border-b border-gold-400/15 bg-navy-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
@@ -17,21 +11,14 @@ export function AppHeader({
           </p>
           <p className="text-sm text-silver-300">{name}</p>
         </div>
-        <div className="flex items-center gap-2">
-          {inviteCode && (
-            <span className="hidden rounded-full border border-gold-400/30 px-2 py-1 font-mono text-[11px] text-gold-200 sm:inline">
-              {inviteCode}
-            </span>
-          )}
-          <form action={switchMember}>
-            <button
-              type="submit"
-              className="rounded-full px-3 py-1.5 text-xs text-silver-300 hover:bg-white/5"
-            >
-              Switch
-            </button>
-          </form>
-        </div>
+        <form action={switchMember}>
+          <button
+            type="submit"
+            className="rounded-full px-3 py-1.5 text-xs text-silver-300 hover:bg-white/5"
+          >
+            Log out
+          </button>
+        </form>
       </div>
       <nav className="mx-auto grid max-w-lg grid-cols-3 px-4 pb-2 text-sm">
         <Link

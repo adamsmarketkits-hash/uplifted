@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { AppHeader } from "@/components/app-header";
-import { EagleBackdrop } from "@/components/eagle-backdrop";
 import { FitnessIcon, fitnessLabel } from "@/components/fitness-icon";
 import { getFamily, getFamilyWeekBoard } from "@/lib/queries";
 import { getSession, getTimeZone } from "@/lib/session";
@@ -18,23 +17,13 @@ export default async function FamilyPage() {
 
   return (
     <div className="min-h-full">
-      <EagleBackdrop />
-      <AppHeader
-        name={session.displayName}
-        inviteCode={family?.inviteCode}
-      />
+      <AppHeader name={session.displayName} />
       <main className="mx-auto flex max-w-lg flex-col gap-4 px-4 py-5">
         <div>
           <h1 className="text-2xl font-semibold">{family?.name}</h1>
           <p className="text-sm text-silver-400">
-            Weekly volume and 3-workout consistency. Tap a name for this week’s
-            sessions.
+            Weekly volume and 3-workout consistency. Tap a name to open their profile.
           </p>
-          {family && (
-            <p className="mt-2 rounded-xl border border-gold-400/20 bg-navy-800/85 px-3 py-2 font-mono text-sm tracking-[0.2em] text-gold-200">
-              Invite {family.inviteCode}
-            </p>
-          )}
         </div>
         <ol className="flex flex-col gap-3">
           {board.map((row, index) => (
@@ -76,6 +65,11 @@ export default async function FamilyPage() {
         >
           Manage people
         </Link>
+        {family && (
+          <p className="text-center text-xs text-silver-500">
+            Invite code <span className="font-mono tracking-[0.2em] text-gold-200">{family.inviteCode}</span>
+          </p>
+        )}
       </main>
     </div>
   );

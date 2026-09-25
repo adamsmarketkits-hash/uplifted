@@ -187,6 +187,7 @@ export async function loginByName(
 
 export async function switchMember() {
   await clearSession();
+  await clearFamilyCookie();
   redirect("/login");
 }
 
@@ -617,6 +618,15 @@ export async function saveRoutine(input: {
   if ("error" in parsed) return parsed;
 
   const db = await getDb();
+  const owned = await db
+    .select({ id: routines.id })
+    .from(routines)
+    .where(eq(routines.memberId, input.memberId));
+  const alreadyTheirs = owned.some((routine) => routine.id === input.routineId);
+  if (!alreadyTheirs && owned.length >= 6) {
+    return { error: "Each person can have up to 6 workouts." };
+  }
+
   if (input.routineId) {
     const [existing] = await db
       .select()
@@ -790,6 +800,16 @@ export async function saveWorkoutAsRoutine(workoutId: string, name: string) {
     })),
   );
   if ("error" in parsed) return parsed;
+
+  if (!routineId) {
+    const owned = await db
+      .select({ id: routines.id })
+      .from(routines)
+      .where(eq(routines.memberId, session.memberId));
+    if (owned.length >= 6) {
+      return { error: "Each person can have up to 6 workouts." };
+    }
+  }
 
   await db.transaction(async (tx) => {
     let id = routineId;

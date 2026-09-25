@@ -1,4 +1,3 @@
-import { EagleBackdrop } from "@/components/eagle-backdrop";
 import { WelcomeForms } from "@/components/welcome-forms";
 import { getFamilyCookie, getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
@@ -13,7 +12,6 @@ export default async function WelcomePage() {
 
   return (
     <main className="mx-auto flex min-h-full max-w-lg flex-col gap-6 px-4 py-10">
-      <EagleBackdrop />
       <div>
         <p className="text-xs uppercase tracking-[0.25em] text-gold-300/80">
           UpLifted

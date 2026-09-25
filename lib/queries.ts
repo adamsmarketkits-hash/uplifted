@@ -269,6 +269,61 @@ export async function getMemberWeekWorkouts(
   };
 }
 
+export type FinishedWorkoutSummary = {
+  id: string;
+  name: string | null;
+  dateLabel: string;
+  volume: number;
+  exerciseNames: string[];
+};
+
+export async function getRecentFinishedWorkouts(
+  memberId: string,
+  timeZone: string,
+  limit: number,
+): Promise<FinishedWorkoutSummary[]> {
+  const db = await getDb();
+  const rows = await db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.memberId, memberId), isNotNull(workouts.finishedAt)))
+    .orderBy(desc(workouts.finishedAt))
+    .limit(limit);
+  if (!rows.length) return [];
+
+  const workoutIds = rows.map((row) => row.id);
+  const setRows = await db
+    .select()
+    .from(sets)
+    .where(inArray(sets.workoutId, workoutIds));
+  const routineIds = rows
+    .map((row) => row.routineId)
+    .filter((id): id is string => Boolean(id));
+  const routineRows = routineIds.length
+    ? await db.select().from(routines).where(inArray(routines.id, routineIds))
+    : [];
+
+  return rows
+    .map((row) => {
+      const completed = setRows.filter(
+        (set) => set.workoutId === row.id && set.completedAt,
+      );
+      if (!completed.length) return null;
+      const exerciseNames: string[] = [];
+      for (const set of completed) {
+        if (!exerciseNames.includes(set.exerciseName)) exerciseNames.push(set.exerciseName);
+      }
+      return {
+        id: row.id,
+        name: routineRows.find((routine) => routine.id === row.routineId)?.name ?? null,
+        dateLabel: formatShortDate(timeZone, row.startedAt),
+        volume: completed.reduce((sum, set) => sum + set.weight * set.reps, 0),
+        exerciseNames,
+      };
+    })
+    .filter((row): row is FinishedWorkoutSummary => row !== null);
+}
+
 export type RoutineExercise = {
   name: string;
   sets: { weight: number; reps: number }[];
