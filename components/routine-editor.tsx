@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { deleteRoutine, saveRoutine, startRoutine } from "@/lib/actions";
 import type { RoutineExercise } from "@/lib/queries";
 
+const SET_GRID =
+  "grid grid-cols-[2rem_minmax(0,1.3fr)_4.25rem_3.5rem_2.25rem] items-center gap-2";
+
 type DraftSet = { weight: string; reps: string };
 type DraftExercise = { name: string; sets: DraftSet[] };
 
@@ -31,6 +34,7 @@ export function RoutineEditor({
   members,
   currentMemberId,
   suggestions,
+  previousByExercise = {},
 }: {
   routineId?: string;
   memberId: string;
@@ -39,6 +43,7 @@ export function RoutineEditor({
   members: { id: string; displayName: string }[];
   currentMemberId: string;
   suggestions: string[];
+  previousByExercise?: Record<string, { weight: number; reps: number }[]>;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -132,88 +137,97 @@ export function RoutineEditor({
       </p>
 
       {draft.map((exercise, exerciseIndex) => (
-        <article
-          key={exerciseIndex}
-          className="rounded-2xl border border-white/10 bg-navy-800/85 p-3"
-        >
-          <div className="mb-2 flex items-center gap-2">
-            <input
-              list="routine-exercise-suggestions"
-              value={exercise.name}
-              onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
-              placeholder="Exercise"
-              className="min-w-0 flex-1 rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
-            />
-            <button
-              type="button"
-              onClick={() => move(exerciseIndex, -1)}
-              disabled={exerciseIndex === 0}
-              className="px-2 text-sm text-silver-400 disabled:opacity-30"
-            >
-              Up
-            </button>
-            <button
-              type="button"
-              onClick={() => move(exerciseIndex, 1)}
-              disabled={exerciseIndex === draft.length - 1}
-              className="px-2 text-sm text-silver-400 disabled:opacity-30"
-            >
-              Down
-            </button>
-          </div>
-          <div className="grid grid-cols-[1.5rem_1fr_1fr_2rem] gap-2 px-1 pb-1 text-[11px] uppercase tracking-wide text-silver-500">
-            <span>#</span>
-            <span>lbs</span>
-            <span>reps</span>
+        <article key={exerciseIndex} className="flex flex-col gap-1">
+          <input
+            list="routine-exercise-suggestions"
+            value={exercise.name}
+            onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
+            placeholder="Exercise"
+            className="mb-1 w-full bg-transparent text-lg font-semibold text-gold-300 placeholder:text-silver-500 focus:outline-none"
+          />
+          <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-medium text-silver-500`}>
+            <span className="text-center">Set</span>
+            <span>Previous</span>
+            <span className="text-center">lbs</span>
+            <span className="text-center">Reps</span>
             <span />
           </div>
-          {exercise.sets.map((set, setIndex) => (
-            <div
-              key={setIndex}
-              className="mb-1 grid grid-cols-[1.5rem_1fr_1fr_2rem] items-center gap-2"
-            >
-              <span className="text-sm tabular-nums text-silver-400">{setIndex + 1}</span>
-              <input
-                inputMode="decimal"
-                value={set.weight}
-                onChange={(event) => updateSet(exerciseIndex, setIndex, { weight: event.target.value })}
-                placeholder="last"
-                className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
-              />
-              <input
-                inputMode="numeric"
-                value={set.reps}
-                onChange={(event) => updateSet(exerciseIndex, setIndex, { reps: event.target.value })}
-                placeholder="last"
-                className="w-full rounded-md border border-white/10 bg-navy-950/60 px-2 py-1.5 text-sm tabular-nums"
-              />
+          {exercise.sets.map((set, setIndex) => {
+            const previous = previousByExercise[exercise.name.trim()]?.[setIndex];
+            return (
+              <div key={setIndex} className={`${SET_GRID} mb-1.5`}>
+                <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
+                  {setIndex + 1}
+                </span>
+                <span className="truncate text-sm tabular-nums text-silver-300/40">
+                  {previous ? `${previous.weight} x ${previous.reps}` : "—"}
+                </span>
+                <input
+                  inputMode="decimal"
+                  value={set.weight}
+                  onChange={(event) =>
+                    updateSet(exerciseIndex, setIndex, { weight: event.target.value })
+                  }
+                  placeholder="0"
+                  aria-label={`Set ${setIndex + 1} weight in pounds`}
+                  className="w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
+                />
+                <input
+                  inputMode="numeric"
+                  value={set.reps}
+                  onChange={(event) =>
+                    updateSet(exerciseIndex, setIndex, { reps: event.target.value })
+                  }
+                  placeholder="0"
+                  aria-label={`Set ${setIndex + 1} reps`}
+                  className="w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateExercise(exerciseIndex, {
+                      sets:
+                        exercise.sets.length === 1
+                          ? [blankSet()]
+                          : exercise.sets.filter((_, i) => i !== setIndex),
+                    })
+                  }
+                  className="mx-auto text-silver-500"
+                  aria-label="Remove set"
+                >
+                  ×
+                </button>
+              </div>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() =>
+              updateExercise(exerciseIndex, { sets: [...exercise.sets, blankSet()] })
+            }
+            className="mt-1 w-full rounded-lg bg-navy-800 py-2.5 text-sm font-semibold text-silver-200"
+          >
+            + Add Set
+          </button>
+          <div className="flex items-center justify-between">
+            <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() =>
-                  updateExercise(exerciseIndex, {
-                    sets:
-                      exercise.sets.length === 1
-                        ? [blankSet()]
-                        : exercise.sets.filter((_, i) => i !== setIndex),
-                  })
-                }
-                className="text-silver-500"
-                aria-label="Remove set"
+                onClick={() => move(exerciseIndex, -1)}
+                disabled={exerciseIndex === 0}
+                className="text-sm text-silver-400 disabled:opacity-30"
               >
-                ×
+                Up
+              </button>
+              <button
+                type="button"
+                onClick={() => move(exerciseIndex, 1)}
+                disabled={exerciseIndex === draft.length - 1}
+                className="text-sm text-silver-400 disabled:opacity-30"
+              >
+                Down
               </button>
             </div>
-          ))}
-          <div className="mt-2 flex justify-between">
-            <button
-              type="button"
-              onClick={() =>
-                updateExercise(exerciseIndex, { sets: [...exercise.sets, blankSet()] })
-              }
-              className="text-sm text-gold-300"
-            >
-              + Set
-            </button>
             <button
               type="button"
               onClick={() =>
@@ -225,7 +239,7 @@ export function RoutineEditor({
               }
               className="text-sm text-silver-500"
             >
-              Remove
+              Remove exercise
             </button>
           </div>
         </article>

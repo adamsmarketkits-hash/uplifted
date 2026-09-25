@@ -4,8 +4,9 @@ import {
   getExerciseNames,
   getFamilyMembers,
   getRoutineDetail,
+  getWorkoutMemory,
 } from "@/lib/queries";
-import { getSession } from "@/lib/session";
+import { getSession, getTimeZone } from "@/lib/session";
 import { notFound, redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,17 @@ export default async function EditWorkoutPage({
     getRoutineDetail(session.familyId, routineId),
   ]);
   if (!routine) notFound();
+  const timeZone = await getTimeZone();
+  const memory = await getWorkoutMemory(
+    routine.memberId,
+    routine.exercises.map((exercise) => exercise.name),
+    routine.id,
+    null,
+    timeZone,
+  );
+  const previousByExercise = Object.fromEntries(
+    Object.entries(memory.byExercise).map(([name, entry]) => [name, entry.lastSets]),
+  );
 
   return (
     <div className="min-h-full">
@@ -38,6 +50,7 @@ export default async function EditWorkoutPage({
           members={members}
           currentMemberId={session.memberId}
           suggestions={suggestions}
+          previousByExercise={previousByExercise}
         />
       </main>
     </div>

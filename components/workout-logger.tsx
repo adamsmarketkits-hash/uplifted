@@ -82,10 +82,46 @@ function ElapsedTimer({ startedAt }: { startedAt: Date }) {
   const m = Math.floor((seconds % 3600) / 60);
   const s = seconds % 60;
   const pad = (value: number) => String(value).padStart(2, "0");
-  return <>{`${pad(h)}:${pad(m)}:${pad(s)}`}</>;
+  if (h > 0) return <>{`${h}:${pad(m)}:${pad(s)}`}</>;
+  return <>{`${m}:${pad(s)}`}</>;
 }
 
-const SET_GRID = "grid grid-cols-[minmax(0,1.4fr)_4.25rem_3.5rem_2.5rem] items-center gap-2";
+function WorkoutDate({ startedAt }: { startedAt: Date }) {
+  const [label, setLabel] = useState("");
+
+  useEffect(() => {
+    setLabel(
+      new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(new Date(startedAt)),
+    );
+  }, [startedAt]);
+
+  return <>{label}</>;
+}
+
+function CalendarIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 text-silver-400">
+      <rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M3 10h18M8 3v4M16 3v4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 text-silver-400">
+      <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <path d="M12 8v5l3 2" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const SET_GRID =
+  "grid grid-cols-[2rem_minmax(0,1.3fr)_4.25rem_3.5rem_2.25rem] items-center gap-2";
 
 export function WorkoutLogger({
   workout,
@@ -185,42 +221,46 @@ export function WorkoutLogger({
   }
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2">
-            <h2 className="truncate text-2xl font-bold">{routineName ?? sessionTitle}</h2>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((open) => !open)}
-              className="shrink-0 rounded-lg bg-navy-700/70 px-2 py-0.5 text-lg leading-none text-silver-300"
-              aria-label="Workout options"
-              aria-expanded={menuOpen}
-            >
-              ···
-            </button>
-          </div>
+        <div className="flex items-center justify-end">
           <button
             type="button"
             disabled={pending}
             onClick={() => run(() => finishWorkout(workout.id))}
-            className="shrink-0 rounded-lg bg-gold-400 px-4 py-1.5 text-sm font-semibold text-navy-950 disabled:opacity-60"
+            className="rounded-full bg-gold-400 px-5 py-2 text-sm font-semibold text-navy-950 disabled:opacity-60"
           >
             Finish
           </button>
         </div>
-        <p className="text-sm tabular-nums text-silver-300">
-          <ElapsedTimer startedAt={workout.startedAt} />
-          <span className="text-silver-500"> · </span>
-          {formatVolume(liveVolume)} lb
+        <div className="flex min-w-0 items-center gap-2">
+          <h2 className="truncate text-3xl font-bold tracking-tight">
+            {routineName ?? sessionTitle}
+          </h2>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((open) => !open)}
+            className="shrink-0 rounded-full bg-navy-800 px-2.5 py-1 text-sm leading-none text-silver-300"
+            aria-label="Workout options"
+            aria-expanded={menuOpen}
+          >
+            ···
+          </button>
+        </div>
+        <p className="mt-2 flex items-center gap-2 text-sm text-silver-300">
+          <CalendarIcon />
+          <WorkoutDate startedAt={workout.startedAt} />
         </p>
-        {previous ? (
-          <p className="text-xs text-silver-400">
+        <p className="flex items-center gap-2 text-sm tabular-nums text-silver-300">
+          <ClockIcon />
+          <ElapsedTimer startedAt={workout.startedAt} />
+          <span className="text-silver-500">· {formatVolume(liveVolume)} lb</span>
+        </p>
+        {previous && (
+          <p className="text-xs text-silver-400/45">
             Last time {previous.dateLabel} · {previous.volumeLabel} lb
           </p>
-        ) : routineName ? (
-          <p className="text-xs text-silver-500">First time through this workout</p>
-        ) : null}
+        )}
         <textarea
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
@@ -272,15 +312,12 @@ export function WorkoutLogger({
         const menuShown = openExerciseMenu === group.name;
         const lastSet = group.sets[group.sets.length - 1];
         return (
-          <article
-            key={group.name}
-            className="rounded-2xl border border-white/10 bg-navy-800/85 px-3 pb-3 pt-2.5"
-          >
+          <article key={group.name} className="flex flex-col gap-1">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="min-w-0 truncate font-semibold text-gold-300">{group.name}</h3>
+              <h3 className="min-w-0 truncate text-lg font-semibold text-gold-300">{group.name}</h3>
               <div className="flex shrink-0 items-center gap-2">
                 {volume > 0 && (
-                  <span className="rounded-full bg-gold-400/15 px-2 py-0.5 text-xs font-semibold tabular-nums text-gold-200">
+                  <span className="text-xs font-semibold tabular-nums text-silver-400">
                     {formatVolume(volume)} lb
                   </span>
                 )}
@@ -332,9 +369,10 @@ export function WorkoutLogger({
               </div>
             )}
 
-            <div className={`${SET_GRID} mt-2 px-1 pb-1 text-xs font-semibold text-silver-400`}>
+            <div className={`${SET_GRID} mt-2 px-0.5 pb-1 text-xs font-medium text-silver-500`}>
+              <span className="text-center">Set</span>
               <span>Previous</span>
-              <span className="text-center">Lbs</span>
+              <span className="text-center">lbs</span>
               <span className="text-center">Reps</span>
               <span className="text-center">✓</span>
             </div>
@@ -354,7 +392,7 @@ export function WorkoutLogger({
               type="button"
               disabled={pending}
               onClick={() => run(() => addSet(workout.id, group.name))}
-              className="mt-2 w-full rounded-lg bg-navy-700/60 py-1.5 text-sm font-semibold text-silver-200 disabled:opacity-60"
+              className="mt-1 w-full rounded-lg bg-navy-800 py-2.5 text-sm font-semibold text-silver-200 disabled:opacity-60"
             >
               + Add Set
             </button>
@@ -483,14 +521,16 @@ function SetRowEditor({
     onSave(w, r);
   }
 
-  const inputClass = `w-full rounded-md px-1 py-1.5 text-center text-sm font-semibold tabular-nums ${
-    done ? "bg-transparent text-silver-200" : "bg-navy-950/60 text-white"
-  }`;
+  const inputClass =
+    "w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white";
 
   return (
-    <div className={`${SET_GRID} mb-1 rounded-lg px-1 py-1 ${done ? "bg-gold-400/15" : ""}`}>
-      <span className="truncate text-sm tabular-nums text-silver-400">
-        {previous ? `${formatWeight(previous.weight)} × ${previous.reps}` : "—"}
+    <div className={`${SET_GRID} mb-1.5`}>
+      <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
+        {row.setIndex}
+      </span>
+      <span className="truncate text-sm tabular-nums text-silver-300/40">
+        {previous ? `${formatWeight(previous.weight)} x ${previous.reps}` : "—"}
       </span>
       <input
         inputMode="decimal"
@@ -514,8 +554,10 @@ function SetRowEditor({
         type="button"
         disabled={disabled}
         onClick={() => onToggle(!done, Number(weight), Number(reps))}
-        className={`mx-auto flex h-7 w-8 items-center justify-center rounded-md text-sm font-bold ${
-          done ? "bg-gold-400 text-navy-950" : "bg-navy-700/70 text-silver-400"
+        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-md border text-sm font-bold ${
+          done
+            ? "border-gold-400 bg-gold-400 text-navy-950"
+            : "border-silver-500/40 bg-transparent text-transparent"
         }`}
         aria-pressed={done}
         aria-label={done ? "Mark set incomplete" : "Complete set"}
