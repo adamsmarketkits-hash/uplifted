@@ -1,19 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { deleteRoutine, saveRoutine, startRoutine } from "@/lib/actions";
 import type { RoutineExercise } from "@/lib/queries";
 
+const WEIGHT_UNIT = "lb";
+
 const SET_GRID =
-  "grid w-full grid-cols-[2rem_minmax(3.25rem,1fr)_auto_minmax(3.25rem,1fr)_auto] items-center";
-const VALUE_CLUSTER = "flex items-center gap-2.5";
+  "grid grid-cols-[1.5rem_minmax(4.5rem,1fr)_minmax(4.75rem,1.35fr)_minmax(3.25rem,0.9fr)_2.75rem] items-center gap-x-2 sm:grid-cols-[2rem_minmax(6.5rem,1.1fr)_minmax(7rem,1.4fr)_minmax(5.5rem,1fr)_2.75rem] sm:gap-x-3";
 
 type DraftSet = { weight: string; reps: string };
 type DraftExercise = { name: string; sets: DraftSet[] };
 
 function blankSet(): DraftSet {
   return { weight: "", reps: "" };
+}
+
+function formatHistory(weight: number) {
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(weight);
 }
 
 function toDraft(exercises: RoutineExercise[]): DraftExercise[] {
@@ -25,6 +30,98 @@ function toDraft(exercises: RoutineExercise[]): DraftExercise[] {
       reps: set.reps > 0 ? String(set.reps) : "",
     })),
   }));
+}
+
+function IconButton({
+  label,
+  disabled,
+  onClick,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
+      className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-navy-950 text-silver-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300 disabled:opacity-30"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ArrowUpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path d="M12 6v12M7 11l5-5 5 5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ArrowDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path d="M12 6v12M7 13l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function MoreIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <circle cx="6" cy="12" r="1.4" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" />
+      <circle cx="18" cy="12" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
+      <path d="M5 7h14M9 7V5h6v2M8 7l1 12h6l1-12" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TargetInput({
+  value,
+  onChange,
+  label,
+  inputMode,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+  inputMode: "decimal" | "numeric";
+}) {
+  const selectOnMouseUp = useRef(false);
+
+  return (
+    <input
+      inputMode={inputMode}
+      value={value}
+      aria-label={label}
+      onChange={(event) => onChange(event.target.value)}
+      onFocus={(event) => {
+        selectOnMouseUp.current = true;
+        event.currentTarget.select();
+      }}
+      onMouseUp={(event) => {
+        if (!selectOnMouseUp.current) return;
+        event.preventDefault();
+        selectOnMouseUp.current = false;
+        event.currentTarget.select();
+      }}
+      className="w-full min-w-0 rounded-lg border border-white/15 bg-navy-950 px-2 py-2 text-center text-sm font-semibold tabular-nums text-white focus:border-gold-400 focus:outline-none focus:ring-1 focus:ring-gold-400"
+    />
+  );
 }
 
 export function RoutineEditor({
@@ -53,6 +150,17 @@ export function RoutineEditor({
   const [who, setWho] = useState(memberId);
   const [title, setTitle] = useState(name);
   const [draft, setDraft] = useState<DraftExercise[]>(() => toDraft(exercises));
+  const [menuIndex, setMenuIndex] = useState<number | null>(null);
+  const [nameFocus, setNameFocus] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (menuIndex === null) return;
+    function close() {
+      setMenuIndex(null);
+    }
+    window.addEventListener("pointerdown", close);
+    return () => window.removeEventListener("pointerdown", close);
+  }, [menuIndex]);
 
   function updateExercise(index: number, patch: Partial<DraftExercise>) {
     setDraft((current) =>
@@ -69,6 +177,38 @@ export function RoutineEditor({
           sets: exercise.sets.map((set, j) => (j === setIndex ? { ...set, ...patch } : set)),
         };
       }),
+    );
+  }
+
+  function addSet(exerciseIndex: number) {
+    setDraft((current) =>
+      current.map((exercise, i) => {
+        if (i !== exerciseIndex) return exercise;
+        if (!exercise.sets.length) return { ...exercise, sets: [blankSet()] };
+        const previous = exercise.sets[exercise.sets.length - 1];
+        return {
+          ...exercise,
+          sets: [...exercise.sets, { weight: previous.weight, reps: previous.reps }],
+        };
+      }),
+    );
+  }
+
+  function removeSet(exerciseIndex: number, setIndex: number) {
+    setDraft((current) =>
+      current.map((exercise, i) => {
+        if (i !== exerciseIndex) return exercise;
+        return { ...exercise, sets: exercise.sets.filter((_, j) => j !== setIndex) };
+      }),
+    );
+  }
+
+  function removeExercise(index: number) {
+    setMenuIndex(null);
+    setDraft((current) =>
+      current.length === 1
+        ? [{ name: "", sets: [blankSet()] }]
+        : current.filter((_, i) => i !== index),
     );
   }
 
@@ -133,134 +273,175 @@ export function RoutineEditor({
           className="mt-1 w-full rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-white"
         />
       </label>
-      <p className="text-xs text-silver-500">
-        Leave lb or reps blank and Today fills them from the last time that person did the lift.
-      </p>
 
-      {draft.map((exercise, exerciseIndex) => (
-        <article key={exerciseIndex} className="flex flex-col gap-1">
-          <div className="mb-1 flex items-center gap-2">
-            <input
-              list="routine-exercise-suggestions"
-              value={exercise.name}
-              onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
-              placeholder="Exercise"
-              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-gold-300 placeholder:text-silver-500 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={() => move(exerciseIndex, -1)}
-              disabled={exerciseIndex === 0}
-              aria-label="Move exercise up"
-              className="flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-silver-200 disabled:opacity-30"
-            >
-              ↑
-            </button>
-            <button
-              type="button"
-              onClick={() => move(exerciseIndex, 1)}
-              disabled={exerciseIndex === draft.length - 1}
-              aria-label="Move exercise down"
-              className="flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-silver-200 disabled:opacity-30"
-            >
-              ↓
-            </button>
-          </div>
-          <div className="rounded-xl bg-navy-950 px-2 py-2">
-          <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-semibold text-silver-200`}>
-            <span className="text-center">Set</span>
-            <span />
-            <span>Previous</span>
-            <span />
-            <span className={VALUE_CLUSTER}>
-              <span className="w-14 text-center">lbs</span>
-              <span className="w-12 text-center">Reps</span>
-              <span className="w-8" />
-            </span>
-          </div>
-          {exercise.sets.map((set, setIndex) => {
-            const previous = previousByExercise[exercise.name.trim()]?.[setIndex];
-            return (
-              <div key={setIndex} className={`${SET_GRID} mb-1.5`}>
-                <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
-                  {setIndex + 1}
-                </span>
-                <span />
-                <span className="text-sm font-medium tabular-nums text-silver-400">
-                  {previous ? `${previous.weight} x ${previous.reps}` : "—"}
-                </span>
-                <span />
-                <span className={VALUE_CLUSTER}>
-                  <input
-                    inputMode="decimal"
-                    value={set.weight}
-                    onChange={(event) =>
-                      updateSet(exerciseIndex, setIndex, { weight: event.target.value })
-                    }
-                    placeholder="0"
-                    aria-label={`Set ${setIndex + 1} weight in pounds`}
-                    className="w-14 rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
-                  />
-                  <input
-                    inputMode="numeric"
-                    value={set.reps}
-                    onChange={(event) =>
-                      updateSet(exerciseIndex, setIndex, { reps: event.target.value })
-                    }
-                    placeholder="0"
-                    aria-label={`Set ${setIndex + 1} reps`}
-                    className="w-12 rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      updateExercise(exerciseIndex, {
-                        sets:
-                          exercise.sets.length === 1
-                            ? [blankSet()]
-                            : exercise.sets.filter((_, i) => i !== setIndex),
-                      })
-                    }
-                    className="flex h-8 w-8 shrink-0 items-center justify-center text-silver-400"
-                    aria-label="Remove set"
-                  >
-                    ×
-                  </button>
-                </span>
+      {draft.map((exercise, exerciseIndex) => {
+        const setCount = exercise.sets.length;
+        const history = previousByExercise[exercise.name.trim()] ?? [];
+        return (
+          <article
+            key={exerciseIndex}
+            className="overflow-hidden rounded-2xl border border-white/10 bg-navy-900"
+          >
+            <header className="flex items-start gap-3 px-4 pb-3 pt-4">
+              <div className="min-w-0 flex-1">
+                <textarea
+                  rows={1}
+                  value={exercise.name}
+                  aria-label={`Exercise ${exerciseIndex + 1} name`}
+                  onFocus={() => setNameFocus(exerciseIndex)}
+                  onBlur={() => setNameFocus((current) => (current === exerciseIndex ? null : current))}
+                  ref={(node) => {
+                    if (!node) return;
+                    node.style.height = "auto";
+                    node.style.height = `${node.scrollHeight}px`;
+                  }}
+                  onChange={(event) => {
+                    updateExercise(exerciseIndex, { name: event.target.value });
+                    const field = event.currentTarget;
+                    field.style.height = "auto";
+                    field.style.height = `${field.scrollHeight}px`;
+                  }}
+                  placeholder="Exercise"
+                  className="w-full resize-none overflow-hidden break-words bg-transparent text-xl font-semibold leading-snug text-gold-300 placeholder:text-silver-500 focus:outline-none"
+                />
+                {nameFocus === exerciseIndex &&
+                  suggestions
+                    .filter((suggestion) => {
+                      const query = exercise.name.trim().toLowerCase();
+                      return (
+                        query.length > 0 &&
+                        suggestion.toLowerCase().includes(query) &&
+                        suggestion.toLowerCase() !== query
+                      );
+                    })
+                    .slice(0, 5)
+                    .map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          updateExercise(exerciseIndex, { name: suggestion });
+                          setNameFocus(null);
+                        }}
+                        className="mt-1 block w-full rounded-lg bg-navy-950 px-2 py-1 text-left text-sm text-silver-200"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                <p className="text-sm text-silver-400">
+                  {setCount === 1 ? "1 set" : `${setCount} sets`}
+                </p>
               </div>
-            );
-          })}
-          </div>
-          <button
-            type="button"
-            onClick={() =>
-              updateExercise(exerciseIndex, { sets: [...exercise.sets, blankSet()] })
-            }
-            className="mt-1 w-full rounded-lg bg-navy-800 py-2.5 text-sm font-semibold text-silver-200"
-          >
-            + Add Set
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setDraft((current) =>
-                current.length === 1
-                  ? [{ name: "", sets: [blankSet()] }]
-                  : current.filter((_, i) => i !== exerciseIndex),
-              )
-            }
-            className="self-end text-sm text-silver-400"
-          >
-            Remove exercise
-          </button>
-        </article>
-      ))}
-      <datalist id="routine-exercise-suggestions">
-        {suggestions.map((suggestion) => (
-          <option key={suggestion} value={suggestion} />
-        ))}
-      </datalist>
+              <div className="flex shrink-0 gap-1.5">
+                <IconButton
+                  label={`Move ${exercise.name || "exercise"} up`}
+                  disabled={exerciseIndex === 0}
+                  onClick={() => move(exerciseIndex, -1)}
+                >
+                  <ArrowUpIcon />
+                </IconButton>
+                <IconButton
+                  label={`Move ${exercise.name || "exercise"} down`}
+                  disabled={exerciseIndex === draft.length - 1}
+                  onClick={() => move(exerciseIndex, 1)}
+                >
+                  <ArrowDownIcon />
+                </IconButton>
+                <div
+                  className="relative"
+                  onPointerDown={(event) => event.stopPropagation()}
+                >
+                  <IconButton
+                    label={`${exercise.name || "Exercise"} options`}
+                    onClick={() =>
+                      setMenuIndex((current) => (current === exerciseIndex ? null : exerciseIndex))
+                    }
+                  >
+                    <MoreIcon />
+                  </IconButton>
+                  {menuIndex === exerciseIndex && (
+                    <div className="absolute right-0 z-20 mt-1 w-44 rounded-xl border border-white/10 bg-navy-950 p-1 shadow-lg">
+                      <button
+                        type="button"
+                        onClick={() => removeExercise(exerciseIndex)}
+                        className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold-300"
+                      >
+                        Remove exercise
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </header>
 
+            <div className="px-3 pb-3 sm:px-4">
+              <div className={`${SET_GRID} border-b border-white/10 px-1 pb-2 text-[11px] font-medium text-silver-400 sm:text-xs`}>
+                <span>Set</span>
+                <span>Last workout</span>
+                <span>
+                  <span className="sm:hidden">Weight ({WEIGHT_UNIT})</span>
+                  <span className="hidden sm:inline">Target weight ({WEIGHT_UNIT})</span>
+                </span>
+                <span>
+                  <span className="sm:hidden">Reps</span>
+                  <span className="hidden sm:inline">Target reps</span>
+                </span>
+                <span />
+              </div>
+              {exercise.sets.map((set, setIndex) => {
+                const previous = history[setIndex];
+                const exerciseLabel = exercise.name.trim() || `Exercise ${exerciseIndex + 1}`;
+                return (
+                  <div
+                    key={setIndex}
+                    className={`${SET_GRID} border-b border-white/10 px-1 py-2.5`}
+                  >
+                    <span className="text-sm font-semibold tabular-nums text-silver-200">
+                      {setIndex + 1}
+                    </span>
+                    <span className="truncate text-sm tabular-nums text-silver-300">
+                      {previous
+                        ? `${formatHistory(previous.weight)} ${WEIGHT_UNIT} × ${previous.reps}`
+                        : "—"}
+                    </span>
+                    <TargetInput
+                      value={set.weight}
+                      inputMode="decimal"
+                      label={`${exerciseLabel}, set ${setIndex + 1}, target weight in ${WEIGHT_UNIT}`}
+                      onChange={(weight) => updateSet(exerciseIndex, setIndex, { weight })}
+                    />
+                    <TargetInput
+                      value={set.reps}
+                      inputMode="numeric"
+                      label={`${exerciseLabel}, set ${setIndex + 1}, target reps`}
+                      onChange={(reps) => updateSet(exerciseIndex, setIndex, { reps })}
+                    />
+                    <button
+                      type="button"
+                      aria-label={`Delete set ${setIndex + 1} of ${exerciseLabel}`}
+                      onClick={() => removeSet(exerciseIndex, setIndex)}
+                      className="mx-auto flex h-11 w-11 items-center justify-center rounded-lg text-silver-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300"
+                    >
+                      <TrashIcon />
+                    </button>
+                  </div>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => addSet(exerciseIndex)}
+                className="mt-3 w-full rounded-xl bg-navy-950 py-3 text-sm font-semibold text-silver-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-300"
+              >
+                + Add set
+              </button>
+              <p className="mt-2 text-center text-xs text-silver-500">
+                New sets copy the previous targets
+              </p>
+            </div>
+          </article>
+        );
+      })}
       <button
         type="button"
         onClick={() => setDraft((current) => [...current, { name: "", sets: [blankSet()] }])}
