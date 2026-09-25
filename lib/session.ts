@@ -1,5 +1,8 @@
+import { and, eq } from "drizzle-orm";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getDb } from "./db";
+import { members } from "./db/schema";
 
 export const SESSION_COOKIE = "sf_session";
 export const FAMILY_COOKIE = "sf_family";
@@ -48,10 +51,19 @@ export async function getSession(): Promise<SessionPayload | null> {
   if (!token) return null;
   const session = await decrypt<SessionPayload & { exp: number }>(token);
   if (!session?.memberId || !session.familyId) return null;
+
+  const db = await getDb();
+  const [member] = await db
+    .select({ displayName: members.displayName })
+    .from(members)
+    .where(and(eq(members.id, session.memberId), eq(members.familyId, session.familyId)))
+    .limit(1);
+  if (!member) return null;
+
   return {
     memberId: session.memberId,
     familyId: session.familyId,
-    displayName: session.displayName,
+    displayName: member.displayName,
   };
 }
 

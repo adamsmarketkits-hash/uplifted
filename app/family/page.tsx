@@ -70,6 +70,12 @@ export default async function FamilyPage() {
             </li>
           ))}
         </ol>
+        <Link
+          href="/people"
+          className="self-center rounded-xl border border-white/15 px-4 py-2 text-sm text-silver-300"
+        >
+          Manage people
+        </Link>
       </main>
     </div>
   );

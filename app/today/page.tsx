@@ -38,6 +38,10 @@ export default async function TodayPage() {
       : Promise.resolve({ previous: null, byExercise: {} }),
   ]);
 
+  const weekday = new Intl.DateTimeFormat("en-US", { timeZone, weekday: "long" }).format(
+    active?.workout.startedAt ?? new Date(),
+  );
+
   return (
     <div className="min-h-full">
       <AppHeader
@@ -45,6 +49,7 @@ export default async function TodayPage() {
         inviteCode={family?.inviteCode}
       />
       <main className="mx-auto flex max-w-lg flex-col gap-5 px-4 py-5">
+        {!active && (
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/10 bg-navy-800/85 p-4">
             <p className="text-xs uppercase tracking-widest text-silver-400">
@@ -65,13 +70,16 @@ export default async function TodayPage() {
             <p className="text-xs text-silver-500">lb volume</p>
           </div>
         </div>
+        )}
         <WorkoutLogger
+          key={active?.workout.id ?? "idle"}
           workout={active?.workout ?? null}
           sets={active?.sets ?? []}
           suggestions={suggestions}
           routines={routines}
           planOrder={active?.planOrder ?? []}
           routineName={active?.routineName ?? null}
+          sessionTitle={`${weekday}’s session`}
           previous={memory.previous}
           memory={memory.byExercise}
         />

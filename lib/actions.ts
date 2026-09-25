@@ -310,6 +310,88 @@ export async function finishWorkout(workoutId: string) {
   revalidatePath("/family");
 }
 
+async function ownOpenWorkout(memberId: string, workoutId: string) {
+  const db = await getDb();
+  const [workout] = await db
+    .select()
+    .from(workouts)
+    .where(
+      and(
+        eq(workouts.id, workoutId),
+        eq(workouts.memberId, memberId),
+        isNull(workouts.finishedAt),
+      ),
+    )
+    .limit(1);
+  return workout ?? null;
+}
+
+export async function cancelWorkout(workoutId: string) {
+  const session = await requireSession();
+  const workout = await ownOpenWorkout(session.memberId, workoutId);
+  if (!workout) return { error: "Workout not found." };
+
+  const db = await getDb();
+  await db.delete(workouts).where(eq(workouts.id, workoutId));
+  revalidatePath("/today");
+  revalidatePath("/family");
+}
+
+export async function updateWorkoutNotes(workoutId: string, notes: string) {
+  const session = await requireSession();
+  const clean = notes.trim();
+  if (clean.length > 500) return { error: "Keep notes under 500 characters." };
+  const workout = await ownOpenWorkout(session.memberId, workoutId);
+  if (!workout) return { error: "Workout not found." };
+
+  const db = await getDb();
+  await db
+    .update(workouts)
+    .set({ notes: clean || null })
+    .where(eq(workouts.id, workoutId));
+  revalidatePath("/today");
+}
+
+export async function removeExercise(workoutId: string, exerciseName: string) {
+  const session = await requireSession();
+  const workout = await ownOpenWorkout(session.memberId, workoutId);
+  if (!workout) return { error: "Workout not found." };
+
+  const db = await getDb();
+  await db
+    .delete(sets)
+    .where(and(eq(sets.workoutId, workoutId), eq(sets.exerciseName, exerciseName)));
+  revalidatePath("/today");
+  revalidatePath("/family");
+}
+
+export async function deleteMember(memberId: string): Promise<ActionState> {
+  const session = await requireSession();
+  if (memberId === session.memberId) {
+    return { error: "You can't delete yourself while logged in. Switch to another person first." };
+  }
+
+  const db = await getDb();
+  const familyMembers = await db
+    .select({ id: members.id })
+    .from(members)
+    .where(eq(members.familyId, session.familyId));
+  if (!familyMembers.some((member) => member.id === memberId)) {
+    return { error: "That person is not in this family." };
+  }
+  if (familyMembers.length <= 1) {
+    return { error: "A family needs at least one person." };
+  }
+
+  await db
+    .delete(members)
+    .where(and(eq(members.id, memberId), eq(members.familyId, session.familyId)));
+  revalidatePath("/people");
+  revalidatePath("/family");
+  revalidatePath("/workouts");
+  return {};
+}
+
 export async function addExercise(workoutId: string, exerciseName: string) {
   const session = await requireSession();
   const name = normalizeName(exerciseName);
@@ -737,7 +819,7 @@ export async function saveWorkoutAsRoutine(workoutId: string, name: string) {
     .where(eq(sets.workoutId, workoutId));
   if (!workoutSetRows.length) return { error: "Add an exercise before saving." };
 
-  let planOrder: string[] = [];
+  const planOrder: string[] = [];
   let routineId = workout.routineId;
   if (routineId) {
     const [existing] = await db

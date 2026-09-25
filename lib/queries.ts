@@ -22,6 +22,30 @@ export async function getFamilyMembers(familyId: string) {
     .orderBy(asc(members.createdAt));
 }
 
+export async function getFamilyPeople(familyId: string) {
+  const familyMembers = await getFamilyMembers(familyId);
+  const memberIds = familyMembers.map((member) => member.id);
+  if (!memberIds.length) return [];
+
+  const db = await getDb();
+  const [workoutRows, routineRows] = await Promise.all([
+    db
+      .select({ memberId: workouts.memberId })
+      .from(workouts)
+      .where(and(inArray(workouts.memberId, memberIds), isNotNull(workouts.finishedAt))),
+    db
+      .select({ memberId: routines.memberId })
+      .from(routines)
+      .where(inArray(routines.memberId, memberIds)),
+  ]);
+
+  return familyMembers.map((member) => ({
+    ...member,
+    workoutCount: workoutRows.filter((row) => row.memberId === member.id).length,
+    routineCount: routineRows.filter((row) => row.memberId === member.id).length,
+  }));
+}
+
 export async function getFamily(familyId: string) {
   const db = await getDb();
   const [family] = await db
@@ -56,7 +80,7 @@ export async function getActiveWorkout(memberId: string) {
   if (!workout) return null;
 
   let routineName: string | null = null;
-  let planOrder: string[] = [];
+  const planOrder: string[] = [];
   if (workout.routineId) {
     const [routine] = await db
       .select()
