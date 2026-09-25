@@ -158,7 +158,8 @@ export async function loginByName(
   const matches = await db
     .select()
     .from(members)
-    .where(sql`lower(${members.displayName}) = ${displayName.toLowerCase()}`);
+    .where(sql`lower(${members.displayName}) = ${displayName.toLowerCase()}`)
+    .orderBy(asc(members.createdAt));
 
   for (const member of matches) {
     const ok = await compare(pin, member.pinHash);

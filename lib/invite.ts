@@ -1,5 +1,8 @@
 import { randomBytes } from "crypto";
 
+/** The one family invite code. Do not generate a replacement. */
+export const CANONICAL_INVITE_CODE = "259UXGXU";
+
 const ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 export function generateInviteCode(length = 8) {

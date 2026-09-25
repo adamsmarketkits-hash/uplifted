@@ -1,10 +1,13 @@
 import { mkdirSync } from "fs";
 import os from "os";
 import path from "path";
+import { asc, eq, inArray } from "drizzle-orm";
 import { drizzle as drizzlePg } from "drizzle-orm/postgres-js";
 import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import postgres from "postgres";
+import { CANONICAL_INVITE_CODE } from "../invite";
 import * as schema from "./schema";
+import { families, members } from "./schema";
 import { SCHEMA_SQL } from "./schema-sql";
 
 type Db = ReturnType<typeof drizzlePg<typeof schema>>;
@@ -45,6 +48,29 @@ function pgliteDataDir(url: string) {
   return resolved;
 }
 
+async function ensureCanonicalFamily(db: Db) {
+  const rows = await db.select().from(families).orderBy(asc(families.createdAt));
+  if (!rows.length) return;
+
+  let target = rows.find((row) => row.inviteCode === CANONICAL_INVITE_CODE);
+  if (!target) {
+    target = rows[0];
+    await db
+      .update(families)
+      .set({ inviteCode: CANONICAL_INVITE_CODE })
+      .where(eq(families.id, target.id));
+  }
+
+  const otherIds = rows.filter((row) => row.id !== target.id).map((row) => row.id);
+  if (!otherIds.length) return;
+
+  await db
+    .update(members)
+    .set({ familyId: target.id })
+    .where(inArray(members.familyId, otherIds));
+  await db.delete(families).where(inArray(families.id, otherIds));
+}
+
 async function createDb(): Promise<Db> {
   const url = databaseUrl();
 
@@ -55,7 +81,9 @@ async function createDb(): Promise<Db> {
     const client = new PGlite(dataDir);
     await client.waitReady;
     await client.exec(SCHEMA_SQL);
-    return drizzlePglite(client, { schema }) as unknown as Db;
+    const db = drizzlePglite(client, { schema }) as unknown as Db;
+    await ensureCanonicalFamily(db);
+    return db;
   }
 
   const isNeon = url.includes("neon.tech");
@@ -84,7 +112,9 @@ async function createDb(): Promise<Db> {
     await sql.unsafe(statement);
   }
 
-  return drizzlePg(sql, { schema });
+  const db = drizzlePg(sql, { schema });
+  await ensureCanonicalFamily(db);
+  return db;
 }
 
 export async function getDb() {
