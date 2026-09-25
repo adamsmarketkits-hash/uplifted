@@ -684,6 +684,66 @@ export async function saveRoutine(input: {
   return {};
 }
 
+export async function copyRoutine(
+  routineId: string,
+  targetMemberId: string,
+): Promise<ActionState> {
+  const session = await requireSession();
+  const db = await getDb();
+  const [routine] = await db
+    .select()
+    .from(routines)
+    .where(eq(routines.id, routineId))
+    .limit(1);
+  if (!routine) return { error: "Workout not found." };
+  const owner = await memberInFamily(session.familyId, routine.memberId);
+  const target = await memberInFamily(session.familyId, targetMemberId);
+  if (!owner || !target) return { error: "Workout not found." };
+  if (target.id === routine.memberId) {
+    return { error: "That person already has this workout." };
+  }
+
+  const owned = await db
+    .select({ id: routines.id })
+    .from(routines)
+    .where(eq(routines.memberId, target.id));
+  if (owned.length >= 6) {
+    return { error: `${target.displayName} already has 6 workouts.` };
+  }
+
+  const planned = await db
+    .select()
+    .from(routineSets)
+    .where(eq(routineSets.routineId, routine.id))
+    .orderBy(asc(routineSets.exerciseOrder), asc(routineSets.setIndex));
+
+  const copyId = randomUUID();
+  await db.transaction(async (tx) => {
+    await tx.insert(routines).values({
+      id: copyId,
+      memberId: target.id,
+      name: routine.name,
+    });
+    if (planned.length) {
+      await tx.insert(routineSets).values(
+        planned.map((set) => ({
+          id: randomUUID(),
+          routineId: copyId,
+          exerciseName: set.exerciseName,
+          exerciseOrder: set.exerciseOrder,
+          setIndex: set.setIndex,
+          weight: set.weight,
+          reps: set.reps,
+        })),
+      );
+    }
+  });
+
+  revalidatePath("/workouts");
+  revalidatePath("/today");
+  return {};
+}
+
 export async function deleteRoutine(routineId: string): Promise<ActionState> {
   const session = await requireSession();
   const db = await getDb();

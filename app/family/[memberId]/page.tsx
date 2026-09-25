@@ -55,8 +55,9 @@ export default async function MemberProfilePage({
             </p>
           )}
           {recent.map((workout) => (
-            <article
+            <Link
               key={workout.id}
+              href={`/family/${memberId}/sessions/${workout.id}`}
               className="rounded-2xl border border-white/10 bg-navy-800/85 px-4 py-3"
             >
               <div className="flex items-baseline justify-between gap-3">
@@ -69,7 +70,7 @@ export default async function MemberProfilePage({
               {workout.exerciseNames.length > 0 && (
                 <p className="text-sm text-silver-500">{workout.exerciseNames.join(" · ")}</p>
               )}
-            </article>
+            </Link>
           ))}
         </section>
       </main>

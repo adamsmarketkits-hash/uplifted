@@ -324,6 +324,72 @@ export async function getRecentFinishedWorkouts(
     .filter((row): row is FinishedWorkoutSummary => row !== null);
 }
 
+export async function getFinishedWorkoutDetail(
+  familyId: string,
+  memberId: string,
+  workoutId: string,
+  timeZone: string,
+) {
+  const db = await getDb();
+  const [member] = await db
+    .select()
+    .from(members)
+    .where(and(eq(members.id, memberId), eq(members.familyId, familyId)))
+    .limit(1);
+  if (!member) return null;
+
+  const [workout] = await db
+    .select()
+    .from(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.memberId, memberId)))
+    .limit(1);
+  if (!workout?.finishedAt) return null;
+
+  const setRows = await db
+    .select()
+    .from(sets)
+    .where(eq(sets.workoutId, workoutId))
+    .orderBy(asc(sets.setIndex));
+  const completed = setRows.filter((set) => set.completedAt);
+  if (!completed.length) return null;
+
+  const routine = workout.routineId
+    ? (
+        await db
+          .select()
+          .from(routines)
+          .where(eq(routines.id, workout.routineId))
+          .limit(1)
+      )[0]
+    : null;
+
+  const exerciseNames: string[] = [];
+  for (const set of completed) {
+    if (!exerciseNames.includes(set.exerciseName)) exerciseNames.push(set.exerciseName);
+  }
+
+  return {
+    id: workout.id,
+    memberName: member.displayName,
+    name: routine?.name ?? "Workout",
+    dateLabel: new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(workout.startedAt),
+    notes: workout.notes,
+    volume: completed.reduce((sum, set) => sum + set.weight * set.reps, 0),
+    exercises: exerciseNames.map((name) => ({
+      name,
+      sets: completed
+        .filter((set) => set.exerciseName === name)
+        .map((set) => ({ weight: set.weight, reps: set.reps })),
+    })),
+  };
+}
+
 export type RoutineExercise = {
   name: string;
   sets: { weight: number; reps: number }[];
