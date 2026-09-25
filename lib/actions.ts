@@ -70,6 +70,28 @@ export async function joinFamily(
     .from(members)
     .where(eq(members.familyId, family.id));
 
+  const sameName = existing.filter(
+    (member) => member.displayName.trim().toLowerCase() === displayName.toLowerCase(),
+  );
+  for (const member of sameName) {
+    const ok = await compare(pin, member.pinHash);
+    if (!ok) continue;
+    await setFamilyCookie({
+      familyId: family.id,
+      inviteCode: family.inviteCode,
+      familyName: family.name,
+    });
+    await setSession({
+      memberId: member.id,
+      familyId: family.id,
+      displayName: member.displayName,
+    });
+    redirect("/today");
+  }
+  if (sameName.length > 0) {
+    return { error: "That name is already in the family, and the PIN doesn’t match." };
+  }
+
   if (existing.length >= 6) {
     return { error: "This family already has six members." };
   }
