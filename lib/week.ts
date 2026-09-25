@@ -118,6 +118,16 @@ export function getDayRange(timeZone: string, now = new Date()) {
   return { start, end };
 }
 
+export type MemberLook = "rest" | "easy" | "steady" | "strong";
+
+/** This week's completed volume picks the family picture. */
+export function memberLook(volume: number): MemberLook {
+  if (volume < 100) return "rest";
+  if (volume < 300) return "easy";
+  if (volume > 1000) return "strong";
+  return "steady";
+}
+
 export function formatVolume(volume: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(
     Math.round(volume),

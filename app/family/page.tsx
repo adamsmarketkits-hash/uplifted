@@ -39,13 +39,11 @@ export default async function FamilyPage() {
                 <span className="w-6 text-center text-sm text-silver-500">
                   {index + 1}
                 </span>
-                <div className="text-gold-300">
-                  <FitnessIcon shape={row.shape} />
-                </div>
+                <FitnessIcon look={row.look} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{row.displayName}</p>
                   <p className="text-xs text-silver-400">
-                    {fitnessLabel(row.shape)} · {row.workoutCount}/{row.goal}{" "}
+                    {fitnessLabel(row.look)} · {row.workoutCount}/{row.goal}{" "}
                     workouts
                   </p>
                 </div>

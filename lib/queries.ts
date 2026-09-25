@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lt, ne } from "drizzle-orm";
 import { getDb } from "./db";
 import { families, members, routineSets, routines, sets, workouts } from "./db/schema";
-import { formatVolume, getDayRange, getWeekRange } from "./week";
+import { formatVolume, getDayRange, getWeekRange, memberLook } from "./week";
 
 export const WEEKLY_WORKOUT_GOAL = 3;
 
@@ -192,12 +192,7 @@ export async function getFamilyWeekBoard(familyId: string, timeZone: string) {
         volume,
         workoutCount,
         goal: WEEKLY_WORKOUT_GOAL,
-        shape:
-          workoutCount <= 0
-            ? ("fatter" as const)
-            : workoutCount >= WEEKLY_WORKOUT_GOAL
-              ? ("fitter" as const)
-              : ("mid" as const),
+        look: memberLook(volume),
       };
     })
     .sort((a, b) => b.volume - a.volume || a.displayName.localeCompare(b.displayName));

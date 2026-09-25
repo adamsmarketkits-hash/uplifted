@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";
+import { FitnessIcon, fitnessLabel } from "@/components/fitness-icon";
 import { getMemberWeekWorkouts, getRecentFinishedWorkouts } from "@/lib/queries";
 import { getSession, getTimeZone } from "@/lib/session";
-import { formatVolume } from "@/lib/week";
+import { formatVolume, memberLook } from "@/lib/week";
 
 export const dynamic = "force-dynamic";
 
@@ -29,9 +30,14 @@ export default async function MemberProfilePage({
         <Link href="/family" className="text-sm text-gold-300">
           ← Family board
         </Link>
-        <div>
-          <h1 className="text-2xl font-semibold">{week.member.displayName}</h1>
-          <p className="text-sm text-silver-400">This week</p>
+        <div className="flex items-center gap-3">
+          <FitnessIcon look={memberLook(weekVolume)} className="h-20 w-20" />
+          <div>
+            <h1 className="text-2xl font-semibold">{week.member.displayName}</h1>
+            <p className="text-sm text-silver-400">
+              {fitnessLabel(memberLook(weekVolume))} · this week
+            </p>
+          </div>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-white/10 bg-navy-800/85 p-4">
