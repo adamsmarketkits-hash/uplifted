@@ -20,8 +20,8 @@ export default async function WelcomePage() {
         </p>
         <h1 className="mt-2 text-3xl font-semibold">Lift. Log. Compete.</h1>
         <p className="mt-2 text-silver-400">
-          Track sets, reps, and weekly volume with up to six family members.
-          Hit 3 workouts a week.
+          Track sets, reps, and weekly volume with the family. Hit 3 workouts a
+          week. Ask for the family invite code to get started.
         </p>
       </div>
       <WelcomeForms />

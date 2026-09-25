@@ -3,13 +3,12 @@
 import { randomUUID } from "crypto";
 import { hash, compare } from "bcryptjs";
 import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
-import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "./db";
 import { families, members, routineSets, routines, sets, workouts } from "./db/schema";
 import { getWorkoutMemory, type RoutineExercise } from "./queries";
-import { generateInviteCode, isValidPin, normalizeInviteCode } from "./invite";
+import { isValidPin, normalizeInviteCode } from "./invite";
 import {
   clearFamilyCookie,
   clearSession,
@@ -35,95 +34,6 @@ async function requireSession() {
     redirect("/welcome");
   }
   return session;
-}
-
-export async function createFamily(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const familyName = normalizeName(String(formData.get("familyName") ?? ""));
-  const displayName = normalizeName(String(formData.get("displayName") ?? ""));
-  const pin = String(formData.get("pin") ?? "");
-
-  if (!familyName || familyName.length > 40) {
-    return { error: "Give your family a name (max 40 characters)." };
-  }
-  if (!displayName || displayName.length > 24) {
-    return { error: "Your name is required (max 24 characters)." };
-  }
-  if (!isValidPin(pin)) {
-    return { error: "PIN must be 4–8 digits." };
-  }
-
-  try {
-    await createFamilyCore(familyName, displayName, pin);
-    return {};
-  } catch (error) {
-    if (isRedirectError(error)) throw error;
-    console.error("createFamily failed:", error);
-    const message = error instanceof Error ? error.message : "";
-    if (message.includes("SESSION_SECRET")) {
-      return {
-        error:
-          "Site setup is incomplete (SESSION_SECRET). Add it in Vercel → Settings → Environment Variables, then redeploy.",
-      };
-    }
-    if (message.includes("DATABASE_URL")) {
-      return {
-        error:
-          "Database is not configured. Check DATABASE_URL in Vercel environment variables.",
-      };
-    }
-    return {
-      error: "Could not create family. Try again in a minute or check Vercel logs.",
-    };
-  }
-}
-
-async function createFamilyCore(
-  familyName: string,
-  displayName: string,
-  pin: string,
-) {
-  const db = await getDb();
-  const pinHash = await hash(pin, 10);
-  let inviteCode = generateInviteCode();
-
-  const created = await db.transaction(async (tx) => {
-    for (let attempt = 0; attempt < 5; attempt++) {
-      try {
-        const [family] = await tx
-          .insert(families)
-          .values({ id: randomUUID(), name: familyName, inviteCode })
-          .returning();
-        const [member] = await tx
-          .insert(members)
-          .values({
-            id: randomUUID(),
-            familyId: family.id,
-            displayName,
-            pinHash,
-          })
-          .returning();
-        return { family, member };
-      } catch {
-        inviteCode = generateInviteCode();
-      }
-    }
-    throw new Error("Could not create family");
-  });
-
-  await setFamilyCookie({
-    familyId: created.family.id,
-    inviteCode: created.family.inviteCode,
-    familyName: created.family.name,
-  });
-  await setSession({
-    memberId: created.member.id,
-    familyId: created.family.id,
-    displayName: created.member.displayName,
-  });
-  redirect("/today");
 }
 
 export async function joinFamily(
