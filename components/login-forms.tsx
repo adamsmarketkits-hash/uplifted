@@ -4,11 +4,53 @@ import { useActionState } from "react";
 import {
   joinFamily,
   leaveDevice,
+  loginByName,
   loginMember,
   type ActionState,
 } from "@/lib/actions";
 
 const initial: ActionState = {};
+
+export function ProfileLogin() {
+  const [state, action, pending] = useActionState(loginByName, initial);
+
+  return (
+    <form action={action} className="flex flex-col gap-3 rounded-2xl border border-gold-400/20 bg-navy-800/85 p-4">
+      <h2 className="text-lg font-semibold text-gold-200">Log in</h2>
+      <label className="text-sm text-silver-300">
+        Your name
+        <input
+          name="displayName"
+          required
+          maxLength={24}
+          autoComplete="username"
+          className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
+        />
+      </label>
+      <label className="text-sm text-silver-300">
+        PIN
+        <input
+          name="pin"
+          type="password"
+          inputMode="numeric"
+          autoComplete="current-password"
+          required
+          minLength={4}
+          maxLength={8}
+          className="mt-1 w-full rounded-lg border border-white/10 bg-navy-950/60 px-3 py-2 text-white"
+        />
+      </label>
+      {state.error && <p className="text-sm text-red-300">{state.error}</p>}
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-xl bg-gold-400 px-4 py-2.5 font-semibold text-navy-950 disabled:opacity-60"
+      >
+        {pending ? "Checking…" : "Log In"}
+      </button>
+    </form>
+  );
+}
 
 export function LoginForms({
   familyName,

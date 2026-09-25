@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { hash, compare } from "bcryptjs";
-import { and, asc, desc, eq, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getDb } from "./db";
@@ -140,32 +140,49 @@ export async function loginMember(
   redirect("/today");
 }
 
-export async function rememberFamilyByCode(
+export async function loginByName(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const inviteCode = normalizeInviteCode(String(formData.get("inviteCode") ?? ""));
-  if (inviteCode.length < 6) {
-    return { error: "Enter the family invite code." };
+  const displayName = normalizeName(String(formData.get("displayName") ?? ""));
+  const pin = String(formData.get("pin") ?? "");
+
+  if (!displayName || displayName.length > 24) {
+    return { error: "Enter your name." };
+  }
+  if (!isValidPin(pin)) {
+    return { error: "PIN must be 4–8 digits." };
   }
 
   const db = await getDb();
-  const [family] = await db
+  const matches = await db
     .select()
-    .from(families)
-    .where(eq(families.inviteCode, inviteCode))
-    .limit(1);
+    .from(members)
+    .where(sql`lower(${members.displayName}) = ${displayName.toLowerCase()}`);
 
-  if (!family) {
-    return { error: "No family found for that code." };
+  for (const member of matches) {
+    const ok = await compare(pin, member.pinHash);
+    if (!ok) continue;
+    const [family] = await db
+      .select()
+      .from(families)
+      .where(eq(families.id, member.familyId))
+      .limit(1);
+    if (!family) continue;
+    await setFamilyCookie({
+      familyId: family.id,
+      inviteCode: family.inviteCode,
+      familyName: family.name,
+    });
+    await setSession({
+      memberId: member.id,
+      familyId: member.familyId,
+      displayName: member.displayName,
+    });
+    redirect("/today");
   }
 
-  await setFamilyCookie({
-    familyId: family.id,
-    inviteCode: family.inviteCode,
-    familyName: family.name,
-  });
-  redirect("/login");
+  return { error: "Name or PIN doesn’t match a profile." };
 }
 
 export async function switchMember() {
