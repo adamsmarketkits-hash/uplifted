@@ -121,7 +121,8 @@ function ClockIcon() {
 }
 
 const SET_GRID =
-  "grid grid-cols-[2rem_5.75rem_4.25rem_3.5rem_2.25rem] items-center gap-1.5";
+  "grid w-full grid-cols-[2rem_minmax(3.25rem,1fr)_auto_minmax(3.25rem,1fr)_auto] items-center";
+const VALUE_CLUSTER = "flex items-center gap-2.5";
 
 export function WorkoutLogger({
   workout,
@@ -372,10 +373,14 @@ export function WorkoutLogger({
             <div className="mt-2 rounded-xl bg-navy-950 px-2 py-2">
             <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-semibold text-silver-200`}>
               <span className="text-center">Set</span>
+              <span />
               <span>Previous</span>
-              <span className="text-center">lbs</span>
-              <span className="text-center">Reps</span>
-              <span className="text-center">✓</span>
+              <span />
+              <span className={VALUE_CLUSTER}>
+                <span className="w-14 text-center">lbs</span>
+                <span className="w-12 text-center">Reps</span>
+                <span className="w-8 text-center">✓</span>
+              </span>
             </div>
             {group.sets.map((row) => (
               <SetRowEditor
@@ -524,48 +529,52 @@ function SetRowEditor({
   }
 
   const inputClass =
-    "w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white";
+    "rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white";
 
   return (
     <div className={`${SET_GRID} mb-1.5`}>
       <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
         {row.setIndex}
       </span>
-      <span className="truncate text-sm font-medium tabular-nums text-silver-400">
+      <span />
+      <span className="text-sm font-medium tabular-nums text-silver-400">
         {previous ? `${formatWeight(previous.weight)} x ${previous.reps}` : "—"}
       </span>
-      <input
-        inputMode="decimal"
-        value={weight}
-        disabled={disabled}
-        onChange={(e) => setWeight(e.target.value)}
-        onBlur={commit}
-        aria-label={`Set ${row.setIndex} weight in pounds`}
-        className={inputClass}
-      />
-      <input
-        inputMode="numeric"
-        value={reps}
-        disabled={disabled}
-        onChange={(e) => setReps(e.target.value)}
-        onBlur={commit}
-        aria-label={`Set ${row.setIndex} reps`}
-        className={inputClass}
-      />
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={() => onToggle(!done, Number(weight), Number(reps))}
-        className={`mx-auto flex h-8 w-8 items-center justify-center rounded-md border text-sm font-bold ${
-          done
-            ? "border-gold-400 bg-gold-400 text-navy-950"
-            : "border-silver-500/40 bg-transparent text-transparent"
-        }`}
-        aria-pressed={done}
-        aria-label={done ? "Mark set incomplete" : "Complete set"}
-      >
-        ✓
-      </button>
+      <span />
+      <span className={VALUE_CLUSTER}>
+        <input
+          inputMode="decimal"
+          value={weight}
+          disabled={disabled}
+          onChange={(e) => setWeight(e.target.value)}
+          onBlur={commit}
+          aria-label={`Set ${row.setIndex} weight in pounds`}
+          className={`${inputClass} w-14`}
+        />
+        <input
+          inputMode="numeric"
+          value={reps}
+          disabled={disabled}
+          onChange={(e) => setReps(e.target.value)}
+          onBlur={commit}
+          aria-label={`Set ${row.setIndex} reps`}
+          className={`${inputClass} w-12`}
+        />
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onToggle(!done, Number(weight), Number(reps))}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md border text-sm font-bold ${
+            done
+              ? "border-gold-400 bg-gold-400 text-navy-950"
+              : "border-silver-500/40 bg-transparent text-transparent"
+          }`}
+          aria-pressed={done}
+          aria-label={done ? "Mark set incomplete" : "Complete set"}
+        >
+          ✓
+        </button>
+      </span>
     </div>
   );
 }

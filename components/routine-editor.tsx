@@ -6,7 +6,8 @@ import { deleteRoutine, saveRoutine, startRoutine } from "@/lib/actions";
 import type { RoutineExercise } from "@/lib/queries";
 
 const SET_GRID =
-  "grid grid-cols-[2rem_5.75rem_4.25rem_3.5rem_2.25rem] items-center gap-1.5";
+  "grid w-full grid-cols-[2rem_minmax(3.25rem,1fr)_auto_minmax(3.25rem,1fr)_auto] items-center";
+const VALUE_CLUSTER = "flex items-center gap-2.5";
 
 type DraftSet = { weight: string; reps: string };
 type DraftExercise = { name: string; sets: DraftSet[] };
@@ -168,10 +169,14 @@ export function RoutineEditor({
           <div className="rounded-xl bg-navy-950 px-2 py-2">
           <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-semibold text-silver-200`}>
             <span className="text-center">Set</span>
-            <span>Previous</span>
-            <span className="text-center">lbs</span>
-            <span className="text-center">Reps</span>
             <span />
+            <span>Previous</span>
+            <span />
+            <span className={VALUE_CLUSTER}>
+              <span className="w-14 text-center">lbs</span>
+              <span className="w-12 text-center">Reps</span>
+              <span className="w-8" />
+            </span>
           </div>
           {exercise.sets.map((set, setIndex) => {
             const previous = previousByExercise[exercise.name.trim()]?.[setIndex];
@@ -180,44 +185,48 @@ export function RoutineEditor({
                 <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
                   {setIndex + 1}
                 </span>
-                <span className="truncate text-sm font-medium tabular-nums text-silver-400">
+                <span />
+                <span className="text-sm font-medium tabular-nums text-silver-400">
                   {previous ? `${previous.weight} x ${previous.reps}` : "—"}
                 </span>
-                <input
-                  inputMode="decimal"
-                  value={set.weight}
-                  onChange={(event) =>
-                    updateSet(exerciseIndex, setIndex, { weight: event.target.value })
-                  }
-                  placeholder="0"
-                  aria-label={`Set ${setIndex + 1} weight in pounds`}
-                  className="w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
-                />
-                <input
-                  inputMode="numeric"
-                  value={set.reps}
-                  onChange={(event) =>
-                    updateSet(exerciseIndex, setIndex, { reps: event.target.value })
-                  }
-                  placeholder="0"
-                  aria-label={`Set ${setIndex + 1} reps`}
-                  className="w-full rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateExercise(exerciseIndex, {
-                      sets:
-                        exercise.sets.length === 1
-                          ? [blankSet()]
-                          : exercise.sets.filter((_, i) => i !== setIndex),
-                    })
-                  }
-                  className="mx-auto text-silver-500"
-                  aria-label="Remove set"
-                >
-                  ×
-                </button>
+                <span />
+                <span className={VALUE_CLUSTER}>
+                  <input
+                    inputMode="decimal"
+                    value={set.weight}
+                    onChange={(event) =>
+                      updateSet(exerciseIndex, setIndex, { weight: event.target.value })
+                    }
+                    placeholder="0"
+                    aria-label={`Set ${setIndex + 1} weight in pounds`}
+                    className="w-14 rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
+                  />
+                  <input
+                    inputMode="numeric"
+                    value={set.reps}
+                    onChange={(event) =>
+                      updateSet(exerciseIndex, setIndex, { reps: event.target.value })
+                    }
+                    placeholder="0"
+                    aria-label={`Set ${setIndex + 1} reps`}
+                    className="w-12 rounded-md bg-navy-800 px-1 py-2 text-center text-sm font-semibold tabular-nums text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateExercise(exerciseIndex, {
+                        sets:
+                          exercise.sets.length === 1
+                            ? [blankSet()]
+                            : exercise.sets.filter((_, i) => i !== setIndex),
+                      })
+                    }
+                    className="flex h-8 w-8 shrink-0 items-center justify-center text-silver-400"
+                    aria-label="Remove set"
+                  >
+                    ×
+                  </button>
+                </span>
               </div>
             );
           })}
