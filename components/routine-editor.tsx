@@ -6,7 +6,7 @@ import { deleteRoutine, saveRoutine, startRoutine } from "@/lib/actions";
 import type { RoutineExercise } from "@/lib/queries";
 
 const SET_GRID =
-  "grid grid-cols-[2rem_minmax(0,1.3fr)_4.25rem_3.5rem_2.25rem] items-center gap-2";
+  "grid grid-cols-[2rem_5.75rem_4.25rem_3.5rem_2.25rem] items-center gap-1.5";
 
 type DraftSet = { weight: string; reps: string };
 type DraftExercise = { name: string; sets: DraftSet[] };
@@ -138,14 +138,35 @@ export function RoutineEditor({
 
       {draft.map((exercise, exerciseIndex) => (
         <article key={exerciseIndex} className="flex flex-col gap-1">
-          <input
-            list="routine-exercise-suggestions"
-            value={exercise.name}
-            onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
-            placeholder="Exercise"
-            className="mb-1 w-full bg-transparent text-lg font-semibold text-gold-300 placeholder:text-silver-500 focus:outline-none"
-          />
-          <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-medium text-silver-500`}>
+          <div className="mb-1 flex items-center gap-2">
+            <input
+              list="routine-exercise-suggestions"
+              value={exercise.name}
+              onChange={(event) => updateExercise(exerciseIndex, { name: event.target.value })}
+              placeholder="Exercise"
+              className="min-w-0 flex-1 bg-transparent text-lg font-semibold text-gold-300 placeholder:text-silver-500 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => move(exerciseIndex, -1)}
+              disabled={exerciseIndex === 0}
+              aria-label="Move exercise up"
+              className="flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-silver-200 disabled:opacity-30"
+            >
+              ↑
+            </button>
+            <button
+              type="button"
+              onClick={() => move(exerciseIndex, 1)}
+              disabled={exerciseIndex === draft.length - 1}
+              aria-label="Move exercise down"
+              className="flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-silver-200 disabled:opacity-30"
+            >
+              ↓
+            </button>
+          </div>
+          <div className="rounded-xl bg-navy-950 px-2 py-2">
+          <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-semibold text-silver-200`}>
             <span className="text-center">Set</span>
             <span>Previous</span>
             <span className="text-center">lbs</span>
@@ -159,7 +180,7 @@ export function RoutineEditor({
                 <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
                   {setIndex + 1}
                 </span>
-                <span className="truncate text-sm tabular-nums text-silver-300/40">
+                <span className="truncate text-sm font-medium tabular-nums text-silver-400">
                   {previous ? `${previous.weight} x ${previous.reps}` : "—"}
                 </span>
                 <input
@@ -200,6 +221,7 @@ export function RoutineEditor({
               </div>
             );
           })}
+          </div>
           <button
             type="button"
             onClick={() =>
@@ -209,39 +231,19 @@ export function RoutineEditor({
           >
             + Add Set
           </button>
-          <div className="flex items-center justify-between">
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => move(exerciseIndex, -1)}
-                disabled={exerciseIndex === 0}
-                className="text-sm text-silver-400 disabled:opacity-30"
-              >
-                Up
-              </button>
-              <button
-                type="button"
-                onClick={() => move(exerciseIndex, 1)}
-                disabled={exerciseIndex === draft.length - 1}
-                className="text-sm text-silver-400 disabled:opacity-30"
-              >
-                Down
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() =>
-                setDraft((current) =>
-                  current.length === 1
-                    ? [{ name: "", sets: [blankSet()] }]
-                    : current.filter((_, i) => i !== exerciseIndex),
-                )
-              }
-              className="text-sm text-silver-500"
-            >
-              Remove exercise
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() =>
+              setDraft((current) =>
+                current.length === 1
+                  ? [{ name: "", sets: [blankSet()] }]
+                  : current.filter((_, i) => i !== exerciseIndex),
+              )
+            }
+            className="self-end text-sm text-silver-400"
+          >
+            Remove exercise
+          </button>
         </article>
       ))}
       <datalist id="routine-exercise-suggestions">

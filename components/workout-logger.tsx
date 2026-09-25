@@ -121,7 +121,7 @@ function ClockIcon() {
 }
 
 const SET_GRID =
-  "grid grid-cols-[2rem_minmax(0,1.3fr)_4.25rem_3.5rem_2.25rem] items-center gap-2";
+  "grid grid-cols-[2rem_5.75rem_4.25rem_3.5rem_2.25rem] items-center gap-1.5";
 
 export function WorkoutLogger({
   workout,
@@ -369,7 +369,8 @@ export function WorkoutLogger({
               </div>
             )}
 
-            <div className={`${SET_GRID} mt-2 px-0.5 pb-1 text-xs font-medium text-silver-500`}>
+            <div className="mt-2 rounded-xl bg-navy-950 px-2 py-2">
+            <div className={`${SET_GRID} px-0.5 pb-1 text-xs font-semibold text-silver-200`}>
               <span className="text-center">Set</span>
               <span>Previous</span>
               <span className="text-center">lbs</span>
@@ -388,6 +389,7 @@ export function WorkoutLogger({
                 }
               />
             ))}
+            </div>
             <button
               type="button"
               disabled={pending}
@@ -529,7 +531,7 @@ function SetRowEditor({
       <span className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-navy-800 text-sm font-semibold tabular-nums text-silver-200">
         {row.setIndex}
       </span>
-      <span className="truncate text-sm tabular-nums text-silver-300/40">
+      <span className="truncate text-sm font-medium tabular-nums text-silver-400">
         {previous ? `${formatWeight(previous.weight)} x ${previous.reps}` : "—"}
       </span>
       <input
