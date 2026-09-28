@@ -101,7 +101,7 @@ function TargetInput({
   label: string;
   inputMode: "decimal" | "numeric";
 }) {
-  const selectOnMouseUp = useRef(false);
+  const valueBeforeFocus = useRef(value);
 
   return (
     <input
@@ -110,14 +110,12 @@ function TargetInput({
       aria-label={label}
       onChange={(event) => onChange(event.target.value)}
       onFocus={(event) => {
-        selectOnMouseUp.current = true;
-        event.currentTarget.select();
+        valueBeforeFocus.current = value;
+        event.currentTarget.value = "";
+        onChange("");
       }}
-      onMouseUp={(event) => {
-        if (!selectOnMouseUp.current) return;
-        event.preventDefault();
-        selectOnMouseUp.current = false;
-        event.currentTarget.select();
+      onBlur={() => {
+        if (value.trim() === "") onChange(valueBeforeFocus.current);
       }}
       className="w-full min-w-0 rounded-lg border border-white/15 bg-navy-950 px-2 py-2 text-center text-sm font-semibold tabular-nums text-white focus:border-gold-400 focus:outline-none focus:ring-1 focus:ring-gold-400"
     />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   addExercise,
@@ -519,13 +519,27 @@ function SetRowEditor({
 }) {
   const [weight, setWeight] = useState(String(row.weight));
   const [reps, setReps] = useState(String(row.reps));
+  const weightBeforeFocus = useRef(String(row.weight));
+  const repsBeforeFocus = useRef(String(row.reps));
   const done = Boolean(row.completedAt);
 
-  function commit() {
-    const w = Number(weight);
-    const r = Number(reps);
+  function commit(nextWeight = weight, nextReps = reps) {
+    const w = Number(nextWeight);
+    const r = Number(nextReps);
+    if (!Number.isFinite(w) || !Number.isFinite(r)) return;
     if (w === row.weight && r === row.reps) return;
     onSave(w, r);
+  }
+
+  function clearField(
+    event: React.FocusEvent<HTMLInputElement>,
+    current: string,
+    remember: { current: string },
+    setValue: (value: string) => void,
+  ) {
+    remember.current = current;
+    event.currentTarget.value = "";
+    setValue("");
   }
 
   const inputClass =
@@ -546,8 +560,15 @@ function SetRowEditor({
           inputMode="decimal"
           value={weight}
           disabled={disabled}
+          onFocus={(event) => clearField(event, weight, weightBeforeFocus, setWeight)}
           onChange={(e) => setWeight(e.target.value)}
-          onBlur={commit}
+          onBlur={() => {
+            if (weight.trim() === "") {
+              setWeight(weightBeforeFocus.current);
+              return;
+            }
+            commit();
+          }}
           aria-label={`Set ${row.setIndex} weight in pounds`}
           className={`${inputClass} w-14`}
         />
@@ -555,8 +576,15 @@ function SetRowEditor({
           inputMode="numeric"
           value={reps}
           disabled={disabled}
+          onFocus={(event) => clearField(event, reps, repsBeforeFocus, setReps)}
           onChange={(e) => setReps(e.target.value)}
-          onBlur={commit}
+          onBlur={() => {
+            if (reps.trim() === "") {
+              setReps(repsBeforeFocus.current);
+              return;
+            }
+            commit();
+          }}
           aria-label={`Set ${row.setIndex} reps`}
           className={`${inputClass} w-12`}
         />
