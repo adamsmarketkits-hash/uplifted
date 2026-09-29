@@ -17,7 +17,9 @@ import {
   updateWorkoutNotes,
 } from "@/lib/actions";
 import type { SetRow, Workout } from "@/lib/db/schema";
+import { FinishCelebration } from "@/components/finish-celebration";
 import type { ExerciseMemory } from "@/lib/queries";
+import { memberLook } from "@/lib/week";
 import { formatVolume } from "@/lib/week";
 
 type Group = {
@@ -134,6 +136,7 @@ export function WorkoutLogger({
   sessionTitle,
   previous,
   memory,
+  weekVolume,
 }: {
   workout: Workout | null;
   sets: SetRow[];
@@ -142,8 +145,9 @@ export function WorkoutLogger({
   planOrder: string[];
   routineName: string | null;
   sessionTitle: string;
-  previous: { dateLabel: string; volumeLabel: string } | null;
+  previous: { dateLabel: string; volumeLabel: string; volume: number } | null;
   memory: Record<string, ExerciseMemory>;
+  weekVolume: number;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -155,6 +159,12 @@ export function WorkoutLogger({
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [saveName, setSaveName] = useState(routineName ?? "");
   const [notes, setNotes] = useState(workout?.notes ?? "");
+  const [celebration, setCelebration] = useState<{
+    name: string;
+    volume: number;
+    beatLastTime: boolean;
+    showStrong: boolean;
+  } | null>(null);
 
   const groups = useMemo(() => {
     const grouped = groupSets(sets);
@@ -178,6 +188,30 @@ export function WorkoutLogger({
       }
       router.refresh();
     });
+  }
+
+  function finish() {
+    if (!workout) return;
+    setError(null);
+    const volume = liveVolume;
+    const name = routineName ?? sessionTitle;
+    startTransition(async () => {
+      const result = await finishWorkout(workout.id);
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+        return;
+      }
+      setCelebration({
+        name,
+        volume,
+        beatLastTime: previous != null && volume > previous.volume,
+        showStrong: memberLook(weekVolume) === "strong",
+      });
+    });
+  }
+
+  if (celebration) {
+    return <FinishCelebration {...celebration} />;
   }
 
   if (!workout) {
@@ -224,16 +258,6 @@ export function WorkoutLogger({
   return (
     <section className="flex flex-col gap-5">
       <header className="flex flex-col gap-1">
-        <div className="flex items-center justify-end">
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => run(() => finishWorkout(workout.id))}
-            className="rounded-full bg-gold-400 px-5 py-2 text-sm font-semibold text-navy-950 disabled:opacity-60"
-          >
-            Finish
-          </button>
-        </div>
         <div className="flex min-w-0 items-center gap-2">
           <h2 className="truncate text-3xl font-bold tracking-tight">
             {routineName ?? sessionTitle}
@@ -498,6 +522,15 @@ export function WorkoutLogger({
           Cancel Workout
         </button>
       )}
+
+      <button
+        type="button"
+        disabled={pending}
+        onClick={finish}
+        className="w-full rounded-2xl bg-gold-400 px-4 py-3 text-lg font-semibold text-navy-950 disabled:opacity-60"
+      >
+        Finish
+      </button>
 
       {error && <p className="text-sm text-red-300">{error}</p>}
     </section>

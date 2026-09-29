@@ -413,7 +413,7 @@ export type ExerciseMemory = {
 };
 
 export type WorkoutMemory = {
-  previous: { dateLabel: string; volumeLabel: string } | null;
+  previous: { dateLabel: string; volumeLabel: string; volume: number } | null;
   byExercise: Record<string, ExerciseMemory>;
 };
 
@@ -580,6 +580,7 @@ export async function getWorkoutMemory(
       previous = {
         dateLabel: formatShortDate(timeZone, prevRow.startedAt),
         volumeLabel: formatVolume(volume),
+        volume,
       };
     }
   }

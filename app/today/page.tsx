@@ -6,6 +6,7 @@ import {
   getExerciseNames,
   getMemberRoutines,
   getRecentFinishedWorkouts,
+  getWeekVolume,
   getWorkoutMemory,
 } from "@/lib/queries";
 import { getSession, getTimeZone } from "@/lib/session";
@@ -20,7 +21,7 @@ export default async function TodayPage() {
   const timeZone = await getTimeZone();
   const active = await getActiveWorkout(session.memberId);
   const exerciseNames = [...new Set((active?.sets ?? []).map((set) => set.exerciseName))];
-  const [routines, recent, suggestions, memory] = await Promise.all([
+  const [routines, recent, suggestions, memory, weekVolume] = await Promise.all([
     active ? Promise.resolve([]) : getMemberRoutines(session.memberId),
     active ? Promise.resolve([]) : getRecentFinishedWorkouts(session.memberId, timeZone, 1),
     getExerciseNames(session.familyId),
@@ -33,6 +34,7 @@ export default async function TodayPage() {
           timeZone,
         )
       : Promise.resolve({ previous: null, byExercise: {} }),
+    getWeekVolume(session.memberId, timeZone),
   ]);
 
   const now = new Date();
@@ -89,6 +91,7 @@ export default async function TodayPage() {
             sessionTitle={`${day}’s session`}
             previous={memory.previous}
             memory={memory.byExercise}
+            weekVolume={weekVolume}
           />
         )}
       </main>
